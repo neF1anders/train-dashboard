@@ -1,0 +1,693 @@
+[
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\1_move_detailed_3139.csv",
+    "bytes": 1624667,
+    "sha256": "16705579d7f3b338d29a3caeceb22ed3d08064020468178b4a751fa9059df16b"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\1_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\2_move_detailed_3139.csv",
+    "bytes": 1457588,
+    "sha256": "8d6f36faf84a1c8e5a6a50d3e5227d12bbe44670d2dd2acde2025f05e3060918"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\2_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\3_move_detailed_3139.csv",
+    "bytes": 1290895,
+    "sha256": "22d16d5023bcbff9b0099dd07954cb35b16c5f980e2fabcb5868eca43d351798"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\3_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\4_move_detailed_3139.csv",
+    "bytes": 1122234,
+    "sha256": "4439e326cc6b233baf3cde75b507f1f58875df181285cd5509df72016dd3a679"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\4_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\5_move_detailed_3139.csv",
+    "bytes": 956355,
+    "sha256": "3e387d5556bc9929b42d3f955d410caa72a17ca47e899fe9cbd08bfaf326561f"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_14_09\\5_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\1_move_detailed_3139.csv",
+    "bytes": 839724,
+    "sha256": "0bf1a377ec4955795ca11efac9a21e00e9d2842e8f81bdcca6f2ca4a78cce2bc"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\1_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\2_move_detailed_3139.csv",
+    "bytes": 676637,
+    "sha256": "97532f81fcfcb75b094f1598d36fd2604f7b286be96cb09432406d724e06d257"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\2_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\3_move_detailed_3139.csv",
+    "bytes": 512999,
+    "sha256": "b84309738a89fbc2cd5349179acdd28988cc5613f7f56172a93f553c00d3d894"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\3_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\4_move_detailed_3139.csv",
+    "bytes": 349742,
+    "sha256": "c23b6e3a790e354e42eb59c7cef463dd4726850aa81c10c386c747880cd977ec"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\4_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\5_move_detailed_3139.csv",
+    "bytes": 186865,
+    "sha256": "34eacea0c3aacf0ed2717360e3dc3b6a70ab80d43067084c7e16524193a68236"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\5_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\6_move_detailed_3139.csv",
+    "bytes": 24906,
+    "sha256": "cad07dbe175f0716f4e0375768186bff8184fecf61cede98154da83087256cf9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_16_09\\6_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\1_move_detailed_3139.csv",
+    "bytes": 727401,
+    "sha256": "a9b188c2b75966973980de18c6a03e9350ffb2f9f2723003e2717dabd6d0adc6"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\1_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\2_move_detailed_3139.csv",
+    "bytes": 564175,
+    "sha256": "85c840cd6a2ed52ab3afaddd438768b6cae57383d8e5b0fd29196c4adca6f898"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\2_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\3_move_detailed_3139.csv",
+    "bytes": 401440,
+    "sha256": "d2f01475257bc448982f9451236c78c43ceaa2b1a3419acff4bb79f510a531cf"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\3_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\4_move_detailed_3139.csv",
+    "bytes": 239003,
+    "sha256": "724a0e2c643659cfb905a34ec946e74f6c57675ad150567c350b5152baa561b6"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\4_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\5_move_detailed_3139.csv",
+    "bytes": 75185,
+    "sha256": "7853ec5b44498ee48ff6c08fc651b59165aa93e8b5adb1f5a84c71e536bad914"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_17_09\\5_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\1_move_detailed_3139.csv",
+    "bytes": 801236,
+    "sha256": "8c46ee7f33d9ab9c2b0b972e82cbea1ea8af582b649f39902d281bd600c58901"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\1_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\2_move_detailed_3139.csv",
+    "bytes": 635172,
+    "sha256": "5158a7c2e11ce8d7fd8f6cc0e26457a2babf1e1e7afd087316eac4c729cb01c3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\2_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\3_move_detailed_3139.csv",
+    "bytes": 468685,
+    "sha256": "c50f23f81f301b00aef5e5371da458509fcb87e2b6629805c92056a186b917ea"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\3_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\4_move_detailed_3139.csv",
+    "bytes": 302047,
+    "sha256": "a9e6a4be2e6a2eeee6225d754e8ce3ff95f324681a33fdf4c2839f7bd08aca98"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\4_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\5_move_detailed_3139.csv",
+    "bytes": 134855,
+    "sha256": "d7e1cfa17afd0e69da5537ab89596e696f5ac1d05c3f58f8603c697bec7c51e0"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\3139\\3139_20_09\\5_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\10_move_detailed_7826.csv",
+    "bytes": 1393437,
+    "sha256": "7bdcd482c8407838137b40b880ccd991f01a29db269a706ae0ec522e4838dd18"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\10_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\11_move_detailed_7826.csv",
+    "bytes": 1238889,
+    "sha256": "8e0adf13c2b5b86c248ba469eeefe271ebafebbdf6c4c050c58d621bc00c819b"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\11_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\12_move_detailed_7826.csv",
+    "bytes": 1080836,
+    "sha256": "773217d54991e86ea6d714378ce8c3f74631c341e4a522870b6f05ed5e7464cb"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\12_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\13_move_detailed_7826.csv",
+    "bytes": 928355,
+    "sha256": "3cc030a5b95b90cce1d4a582e92af6cf7751d2c1d3bd4a0e1b642545a170e8e2"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\13_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\14_move_detailed_7826.csv",
+    "bytes": 765145,
+    "sha256": "d92722e31549aeb4df56537c7342c31ded47c74058813b3a72e88f4d019777b0"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\14_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\15_move_detailed_7826.csv",
+    "bytes": 613032,
+    "sha256": "3f1274bc278130c439b7f01913758ddf6b55686b96a2366925a8de58314dfe3b"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\15_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\16_move_detailed_7826.csv",
+    "bytes": 463167,
+    "sha256": "aa12f479f69c91012bcbacc333106a3d68cf8573faf1550c32f455d87da78ac6"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\16_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\17_move_detailed_7826.csv",
+    "bytes": 299625,
+    "sha256": "5629f88ebc7b0a51d218325d70b843e34908c3df8626bde8360f85d0024d575c"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\17_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\18_move_detailed_7826.csv",
+    "bytes": 147702,
+    "sha256": "d57be85a8b20f6ead31a688e17f9d2f16914054bda0f9c648bd9745881f3d860"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\18_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\19_move_detailed_7826.csv",
+    "bytes": 15761,
+    "sha256": "ec5446b07c7ee13cb18ffeb5714c27b0844f9de750c2e9fc1ccc3d8509866150"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\19_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\1_move_detailed_7826.csv",
+    "bytes": 2786664,
+    "sha256": "72bf8bd6f3a941e3ece8f75d5ae329422897fd96cae5b58d256c61db542a2dbf"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\1_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\2_move_detailed_7826.csv",
+    "bytes": 3939146,
+    "sha256": "701966723f0050a6208fb6338c82b23e06a16da17f208022f6a58ecd3027a43d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\2_move_detailed_7826.jsonseq",
+    "bytes": 151050556,
+    "sha256": "f904e7b2fb27552ee598ea70f5524bd94882550a884805e0b959796271ac5e35",
+    "preamble_bytes": 9054,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\3_move_detailed_7826.csv",
+    "bytes": 3780654,
+    "sha256": "3d88c2177c2d9b6421149a1b168c66aaaed2225de3d8e3b7def9e72389c610c0"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\3_move_detailed_7826.jsonseq",
+    "bytes": 151050970,
+    "sha256": "949f2a26425fdf243de375591a8d91ebc3b54269ae0df542db9ee6eae745b744",
+    "preamble_bytes": 9469,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\4_move_detailed_7826.csv",
+    "bytes": 2786664,
+    "sha256": "72bf8bd6f3a941e3ece8f75d5ae329422897fd96cae5b58d256c61db542a2dbf"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\4_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\5_move_detailed_7826.csv",
+    "bytes": 2193288,
+    "sha256": "2c64d5afaa984601cd2324742db711456f97881ca45476b1632d1b06636cb536"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\5_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\6_move_detailed_7826.csv",
+    "bytes": 2036844,
+    "sha256": "743ff30422e2745ac86900e16bc5968b03077a8d85043a497809c76389b6d078"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\6_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\7_move_detailed_7826.csv",
+    "bytes": 1873085,
+    "sha256": "c42b8dea90ec823184e501db5c8194f868339fcf3faa5c51ba5c4b536fb78244"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\7_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\8_move_detailed_7826.csv",
+    "bytes": 2994738,
+    "sha256": "deb4c7e60fbeca792229b7de6cabf4590c4fdd5e075f258c129da947fab8280f"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\8_move_detailed_7826.jsonseq",
+    "bytes": 151050971,
+    "sha256": "9342bc14d6c25767778fd87b0c3643c76ff504e955bacc77f649510fc021b19e",
+    "preamble_bytes": 9470,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\9_move_detailed_7826.csv",
+    "bytes": 1546378,
+    "sha256": "042cdd1ebf00b9a941a6175be075858c185172ddf9be5215e9f46508e9cc12ac"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\7826\\7826_27_09\\9_move_detailed_7826.jsonseq",
+    "bytes": 79556631,
+    "sha256": "8e6340f2a0c10f11e97316a18b9013710476eb01385629698e4e0293b4d159ab",
+    "payload_sha256": "221d3cf0a5a5d95b549af179c675eb46a4000cb895d48a6ae53468f862f74391"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_eighth.csv",
+    "bytes": 2994738,
+    "sha256": "deb4c7e60fbeca792229b7de6cabf4590c4fdd5e075f258c129da947fab8280f"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_eighth.jsonseq",
+    "bytes": 151050971,
+    "sha256": "9342bc14d6c25767778fd87b0c3643c76ff504e955bacc77f649510fc021b19e",
+    "preamble_bytes": 9470,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_second.csv",
+    "bytes": 3939146,
+    "sha256": "701966723f0050a6208fb6338c82b23e06a16da17f208022f6a58ecd3027a43d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_second.jsonseq",
+    "bytes": 151050556,
+    "sha256": "f904e7b2fb27552ee598ea70f5524bd94882550a884805e0b959796271ac5e35",
+    "preamble_bytes": 9054,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_third.csv",
+    "bytes": 3780654,
+    "sha256": "3d88c2177c2d9b6421149a1b168c66aaaed2225de3d8e3b7def9e72389c610c0"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon\\move_detailed_7826_third.jsonseq",
+    "bytes": 151050970,
+    "sha256": "949f2a26425fdf243de375591a8d91ebc3b54269ae0df542db9ee6eae745b744",
+    "preamble_bytes": 9469,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\0210\\03_10_move_detailed_0210.csv",
+    "bytes": 4035324,
+    "sha256": "3e1666bbc2359d5f80b40f57d266dbd4507da941d91f0cb89df88eefa7aa07f1"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\0210\\03_10_move_detailed_0210.jsonseq",
+    "bytes": 240283452,
+    "sha256": "a537755051d58899a681927f8e8710a8e1f7f7b53f6005cbc1697cd92e92afa3",
+    "payload_sha256": "f8431a5110c94649081deab8847850fed2225fda2429b8035f3d2bf67372087e"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3119\\01_10__07_10_move_detailed_3119.csv",
+    "bytes": 13393188,
+    "sha256": "50d736c2f7eeb0c0a86e9838681df57f6e972c0956d393a49b5496fb727207e7"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3119\\01_10__07_10_move_detailed_3119.jsonseq",
+    "bytes": 71473834,
+    "sha256": "a943ce1cd914ef1a1689d19bb1448ecf5719a7fac404b087bcbc1e189d116033",
+    "payload_sha256": "cebd1b80fa9e6e94b069946ebc31a3b4eb2cac132879c0200ccfa4b2bf26fcfc"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\14_09_move_detailed_3139.csv",
+    "bytes": 4658920,
+    "sha256": "293714ba166eed56d36016c5343de52c8f6a52f9b3e7ef36e159fc0815e0621f"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\14_09_move_detailed_3139.jsonseq",
+    "bytes": 197751750,
+    "sha256": "a94078753a92bcc95fd00d6f000587b300a878f9d9cbd179ef03d35df9d101a9",
+    "payload_sha256": "3cdf0f510bb1bc83559cf35f79aff46d07479f422e50b1d2fc5fac607f5beb96"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\16_09_move_detailed_3139.csv",
+    "bytes": 3168565,
+    "sha256": "f98b573283c56abd762f656225d6d897b4fdef18c85fa6ab23d283bf1604523e"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\16_09_move_detailed_3139.jsonseq",
+    "bytes": 114474406,
+    "sha256": "ca70d960ed89f6dc9e934612c05a7896e94631a76120a7f215cdda773af10d8d",
+    "payload_sha256": "d3e1c17d36bf1a186137ea365d7efa1019c1ea16cf7a621fe8a6ff6e0d37aca3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\17_09_move_detailed_3139.csv",
+    "bytes": 3621397,
+    "sha256": "cc28cc6796fd11d9bc540cfe916784d630f32b4f002f02a1c649cffdfd63a320"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\17_09_move_detailed_3139.jsonseq",
+    "bytes": 143653728,
+    "sha256": "8bd08fd233d663aa110cc61c801c9bc240cb220af55c4b7e452067c153b25833",
+    "payload_sha256": "7fa6c5794f7a0a0b20f3890550b29e00df91a2e8ce0c519ea0064228fb42e40d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\20_09_move_detailed_3139.csv",
+    "bytes": 3865306,
+    "sha256": "89929aae7eb0455b6ad189dcf872bfa6b33f0bc789cac3484f52b6e9babeadaa"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\3139\\20_09_move_detailed_3139.jsonseq",
+    "bytes": 146561881,
+    "sha256": "a165da1b3db99d7a73d3d737ede5b39e6f950d4f8c82d80502e6a0b2af202482",
+    "payload_sha256": "3007657b6ed0d91437f6ae8b643920ab4655076834cecf9ed8c208e280fd0fb8"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7752\\15_09__22_09_move_detailed_7752.csv",
+    "bytes": 16897338,
+    "sha256": "0c8754d1fc97d9b7046b317ac9459eacde66d9a87e8447d5e2d496ecd3b9d9cd"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7752\\15_09__22_09_move_detailed_7752.jsonseq",
+    "bytes": 191306112,
+    "sha256": "3ec82601c60651112b7576f27d7d774c53216b2ed32f2eda3ba14c24bb757702",
+    "payload_sha256": "31d758859a6c8ff2a116c5b11989f6ee970c8746e85d2679dc4934340ef2fe23"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7752\\23_09__29_09_move_detailed_7752.csv",
+    "bytes": 9125061,
+    "sha256": "ccae6485f45224690bc65d3fd643f8fbf0feedf62f5e854e61f492686537fc30"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7752\\23_09__29_09_move_detailed_7752.jsonseq",
+    "bytes": 156163235,
+    "sha256": "9d72488cfd61784b723d8b9a35bc8ec22860994a5984ee2461d7cc6bc48ff116",
+    "payload_sha256": "d0cc3975b1afd3b4979cc518889fda4607778cc052609f3a6fe8463785449f94"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\21_09_move_detailed_7821.csv",
+    "bytes": 2497354,
+    "sha256": "29f816a7b29f65e7c55b4057f480a5838c30c6ee82fe5e75a3ebbb55402f7d37"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\21_09_move_detailed_7821.jsonseq",
+    "bytes": 71895033,
+    "sha256": "4c7616467f023b2ee0323a78ca1fc514a3698a4417c8470562e2dead5ed12b77",
+    "payload_sha256": "72f627e41bbc3a9338e83ceb9a3787b6627d044a99909439aac60b05a8d0a50d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\22_09_move_detailed_7821.csv",
+    "bytes": 2099552,
+    "sha256": "9444704fee4d755f035a8f0fa57c6ad8e9e37573c97374c824382f8a23793be1"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\22_09_move_detailed_7821.jsonseq",
+    "bytes": 40639430,
+    "sha256": "b8b8bfaf59412105930a79eba4dacf15966ba716f80da1aa8bc2c2c81f3d3e65",
+    "payload_sha256": "5a842f7835c2cd23d171e2840740a6a4de2a1066ebff645671f3efcc60c0fa1c"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\23_09_move_detailed_7821.csv",
+    "bytes": 3413814,
+    "sha256": "60bb22c1812ac261384bb625772abc9e6f825d59a9d68dea47faf36d63f4fd4f"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\23_09_move_detailed_7821.jsonseq",
+    "bytes": 115554055,
+    "sha256": "b8bc34783d24865409d216d0f3b280affe6df9c72b04eeaa7ab8d922b5ff7fac",
+    "payload_sha256": "22493f3f4f3ff304fb3b1427a42bccddf393fe5ff020a14562ec3994cd3ec3a0"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\24_09_move_detailed_7821.csv",
+    "bytes": 2820930,
+    "sha256": "2335a364f46c266e88481f4cf9fcad9ee0dccca2f289c86dce203541a752291e"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\24_09_move_detailed_7821.jsonseq",
+    "bytes": 76325004,
+    "sha256": "9a317dfc551362319f9ce67a030aaa76c2b92674e762561195116e118ec60279",
+    "payload_sha256": "e4496632d687ab093fabca7302427b6c5ca9aaef2cabaff8c2a3cc99a8a4f9d7"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\25_09_move_detailed_7821.csv",
+    "bytes": 3146448,
+    "sha256": "f813ef98c79fb4b46df9d41a661b5d89a48759ad5c967c4ad7e7d8178a3c3a1d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\25_09_move_detailed_7821.jsonseq",
+    "bytes": 96390932,
+    "sha256": "f13dc9af632e9b6d32da74468d21393819063dce61292369fa583dfaed8e8e65",
+    "payload_sha256": "3b5eaef0e98e0b6abd3dcd3e28ffc806b3485db891c12bc5853f1faa81b1987e"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\filtered_26_09__07_10_move_detailed_7821.csv",
+    "bytes": 5361778,
+    "sha256": "891942c88cdca4ee248f56bd0283e35f63b6309eaa0a6cfcfcdb5fc177f17467"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7821\\filtered_26_09__07_10_move_detailed_7821.jsonseq",
+    "bytes": 66998470,
+    "sha256": "9adbef1ccd0d03219c207ab4bf6c1ed872cf7a4a21773cb2807e4f4d5700abae",
+    "payload_sha256": "6234520f2e38006ca10eb67455b5a7030cb29683162732f7408b73c350295fd3"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7826\\27_09_move_detailed_7826.csv",
+    "bytes": 3939146,
+    "sha256": "701966723f0050a6208fb6338c82b23e06a16da17f208022f6a58ecd3027a43d"
+  },
+  {
+    "path": "materials\\extracted\\new\\hakathon_new_data\\7826\\27_09_move_detailed_7826.jsonseq",
+    "bytes": 151050971,
+    "sha256": "9342bc14d6c25767778fd87b0c3643c76ff504e955bacc77f649510fc021b19e",
+    "preamble_bytes": 9470,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_eighth.csv",
+    "bytes": 2994738,
+    "sha256": "deb4c7e60fbeca792229b7de6cabf4590c4fdd5e075f258c129da947fab8280f"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_eighth.jsonseq",
+    "bytes": 151050971,
+    "sha256": "9342bc14d6c25767778fd87b0c3643c76ff504e955bacc77f649510fc021b19e",
+    "preamble_bytes": 9470,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_second.csv",
+    "bytes": 3939146,
+    "sha256": "701966723f0050a6208fb6338c82b23e06a16da17f208022f6a58ecd3027a43d"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_second.jsonseq",
+    "bytes": 151050556,
+    "sha256": "f904e7b2fb27552ee598ea70f5524bd94882550a884805e0b959796271ac5e35",
+    "preamble_bytes": 9054,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_third.csv",
+    "bytes": 3780654,
+    "sha256": "3d88c2177c2d9b6421149a1b168c66aaaed2225de3d8e3b7def9e72389c610c0"
+  },
+  {
+    "path": "materials\\extracted\\original\\hakathon\\move_detailed_7826_third.jsonseq",
+    "bytes": 151050970,
+    "sha256": "949f2a26425fdf243de375591a8d91ebc3b54269ae0df542db9ee6eae745b744",
+    "preamble_bytes": 9469,
+    "preamble_contains_comments": true,
+    "payload_sha256": "8e292b32ba055841459d3636aaec6632bb54d853ed04ad0a5fc28f3ef61f78f9"
+  }
+]

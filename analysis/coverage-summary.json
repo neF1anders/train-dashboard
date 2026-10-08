@@ -1,0 +1,583 @@
+{
+  "method": "Sum of per-vehicle unions of intervals between adjacent samples no more than 30 seconds apart. Overlaps within/between CSV and JSON count once. Stationary time included. CSV naive timestamps assumed UTC+03:00, consistent with matching JSON. No extrapolation before first or after last sample.",
+  "vehicles": [
+    {
+      "vehicle": "0210",
+      "json_hours": 16.495450833333333,
+      "csv_hours": 15.571388888888889,
+      "combined_hours": 16.49557666666667,
+      "json_distinct_timestamps": 64971,
+      "csv_distinct_timestamps": 15287,
+      "first": "2026-10-03T05:04:51.463000+03:00",
+      "last": "2026-10-03T21:35:50.771000+03:00",
+      "calendar_dates": [
+        "2026-10-03"
+      ],
+      "routes": [
+        "0.0",
+        "0.2",
+        "100.1",
+        "100.2",
+        "100.4"
+      ]
+    },
+    {
+      "vehicle": "3119",
+      "json_hours": 9.049745833333333,
+      "csv_hours": 69.36333333333333,
+      "combined_hours": 69.36597777777777,
+      "json_distinct_timestamps": 23431,
+      "csv_distinct_timestamps": 60898,
+      "first": "2026-10-01T09:36:28+03:00",
+      "last": "2026-10-06T00:36:18+03:00",
+      "calendar_dates": [
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04",
+        "2026-10-05",
+        "2026-10-06"
+      ],
+      "routes": [
+        "0.0",
+        "0.1",
+        "1.1",
+        "3.1",
+        "40.1",
+        "40.2",
+        "40.31",
+        "40.39",
+        "40.40",
+        "6.1",
+        "6.2"
+      ]
+    },
+    {
+      "vehicle": "3139",
+      "json_hours": 75.13800166666667,
+      "csv_hours": 75.1375,
+      "combined_hours": 75.1395386111111,
+      "json_distinct_timestamps": 192068,
+      "csv_distinct_timestamps": 69502,
+      "first": "2026-09-14T04:23:15+03:00",
+      "last": "2026-09-21T01:02:15.990000+03:00",
+      "calendar_dates": [
+        "2026-09-14",
+        "2026-09-15",
+        "2026-09-16",
+        "2026-09-17",
+        "2026-09-18",
+        "2026-09-20",
+        "2026-09-21"
+      ],
+      "routes": [
+        "0.0",
+        "0.1",
+        "1.1",
+        "1.2",
+        "3.1",
+        "3.2",
+        "40.1",
+        "40.2",
+        "6.1",
+        "6.2"
+      ]
+    },
+    {
+      "vehicle": "7752",
+      "json_hours": 35.05036416666667,
+      "csv_hours": 147.40805555555556,
+      "combined_hours": 161.15373305555556,
+      "json_distinct_timestamps": 107838,
+      "csv_distinct_timestamps": 126335,
+      "first": "2026-09-15T04:36:39+03:00",
+      "last": "2026-09-29T00:56:03+03:00",
+      "calendar_dates": [
+        "2026-09-15",
+        "2026-09-16",
+        "2026-09-17",
+        "2026-09-18",
+        "2026-09-19",
+        "2026-09-20",
+        "2026-09-21",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-25",
+        "2026-09-26",
+        "2026-09-28",
+        "2026-09-29"
+      ],
+      "routes": [
+        "0.0",
+        "10.1",
+        "10.2",
+        "10.33",
+        "10.34",
+        "10.35",
+        "39.1",
+        "39.2",
+        "39.26",
+        "39.27",
+        "39.28"
+      ]
+    },
+    {
+      "vehicle": "7821",
+      "json_hours": 99.61641027777777,
+      "csv_hours": 94.5675,
+      "combined_hours": 109.6306911111111,
+      "json_distinct_timestamps": 161469,
+      "csv_distinct_timestamps": 86167,
+      "first": "2026-09-21T04:38:12+03:00",
+      "last": "2026-10-06T20:34:15+03:00",
+      "calendar_dates": [
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-25",
+        "2026-09-26",
+        "2026-09-27",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-05",
+        "2026-10-06"
+      ],
+      "routes": [
+        "0.0",
+        "24.1",
+        "24.2",
+        "24.7",
+        "24.8",
+        "65.1",
+        "65.2",
+        "65.3"
+      ]
+    },
+    {
+      "vehicle": "7826",
+      "json_hours": 38.73595777777778,
+      "csv_hours": 37.257777777777775,
+      "combined_hours": 38.74013166666667,
+      "json_distinct_timestamps": 76322,
+      "csv_distinct_timestamps": 32793,
+      "first": "2026-09-27T08:24:01+03:00",
+      "last": "2026-10-02T02:59:57.794000+03:00",
+      "calendar_dates": [
+        "2026-09-27",
+        "2026-09-28",
+        "2026-10-01",
+        "2026-10-02"
+      ],
+      "routes": [
+        "0.0",
+        "30.4",
+        "7.1",
+        "7.2",
+        "7.5",
+        "7.6"
+      ]
+    }
+  ],
+  "sensitivity_hours": {
+    "10": {
+      "json": 273.9350175,
+      "csv": 435.1383333333333,
+      "combined": 466.6235208333334
+    },
+    "30": {
+      "json": 274.0859305555556,
+      "csv": 439.3055555555556,
+      "combined": 470.5256488888889
+    },
+    "60": {
+      "json": 274.2554788888889,
+      "csv": 446.58861111111105,
+      "combined": 477.5852836111111
+    }
+  },
+  "routes": [
+    {
+      "route": "0.0",
+      "base_number": "0",
+      "vehicles": [
+        "0210",
+        "3119",
+        "3139",
+        "7752",
+        "7821",
+        "7826"
+      ],
+      "observations": 62026,
+      "same_route_coverage_hours": 40.304075833333336
+    },
+    {
+      "route": "0.1",
+      "base_number": "0",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 439,
+      "same_route_coverage_hours": 0.5703930555555555
+    },
+    {
+      "route": "0.2",
+      "base_number": "0",
+      "vehicles": [
+        "0210"
+      ],
+      "observations": 308,
+      "same_route_coverage_hours": 0.1258386111111111
+    },
+    {
+      "route": "1.1",
+      "base_number": "1",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 3150,
+      "same_route_coverage_hours": 1.0386366666666667
+    },
+    {
+      "route": "1.2",
+      "base_number": "1",
+      "vehicles": [
+        "3139"
+      ],
+      "observations": 1973,
+      "same_route_coverage_hours": 0.48574194444444446
+    },
+    {
+      "route": "3.1",
+      "base_number": "3",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 57700,
+      "same_route_coverage_hours": 17.79368472222222
+    },
+    {
+      "route": "3.2",
+      "base_number": "3",
+      "vehicles": [
+        "3139"
+      ],
+      "observations": 49232,
+      "same_route_coverage_hours": 14.163188055555555
+    },
+    {
+      "route": "6.1",
+      "base_number": "6",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 22256,
+      "same_route_coverage_hours": 11.803001666666667
+    },
+    {
+      "route": "6.2",
+      "base_number": "6",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 23955,
+      "same_route_coverage_hours": 11.498446388888889
+    },
+    {
+      "route": "7.1",
+      "base_number": "7",
+      "vehicles": [
+        "7826"
+      ],
+      "observations": 46829,
+      "same_route_coverage_hours": 15.896083333333333
+    },
+    {
+      "route": "7.2",
+      "base_number": "7",
+      "vehicles": [
+        "7826"
+      ],
+      "observations": 42943,
+      "same_route_coverage_hours": 12.457280833333334
+    },
+    {
+      "route": "7.5",
+      "base_number": "7",
+      "vehicles": [
+        "7826"
+      ],
+      "observations": 3026,
+      "same_route_coverage_hours": 2.8127955555555557
+    },
+    {
+      "route": "7.6",
+      "base_number": "7",
+      "vehicles": [
+        "7826"
+      ],
+      "observations": 2248,
+      "same_route_coverage_hours": 1.3349225
+    },
+    {
+      "route": "10.1",
+      "base_number": "10",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 61199,
+      "same_route_coverage_hours": 25.964305555555555
+    },
+    {
+      "route": "10.2",
+      "base_number": "10",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 66471,
+      "same_route_coverage_hours": 25.612944444444445
+    },
+    {
+      "route": "10.33",
+      "base_number": "10",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 963,
+      "same_route_coverage_hours": 1.2861111111111112
+    },
+    {
+      "route": "10.34",
+      "base_number": "10",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 6021,
+      "same_route_coverage_hours": 2.2496155555555557
+    },
+    {
+      "route": "10.35",
+      "base_number": "10",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 7340,
+      "same_route_coverage_hours": 4.571414166666667
+    },
+    {
+      "route": "24.1",
+      "base_number": "24",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 95897,
+      "same_route_coverage_hours": 47.188625
+    },
+    {
+      "route": "24.2",
+      "base_number": "24",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 118548,
+      "same_route_coverage_hours": 51.45239
+    },
+    {
+      "route": "24.7",
+      "base_number": "24",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 190,
+      "same_route_coverage_hours": 0.08888888888888889
+    },
+    {
+      "route": "24.8",
+      "base_number": "24",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 251,
+      "same_route_coverage_hours": 0.1711111111111111
+    },
+    {
+      "route": "30.4",
+      "base_number": "30",
+      "vehicles": [
+        "7826"
+      ],
+      "observations": 2,
+      "same_route_coverage_hours": 0.00010861111111111111
+    },
+    {
+      "route": "39.1",
+      "base_number": "39",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 37709,
+      "same_route_coverage_hours": 44.545
+    },
+    {
+      "route": "39.2",
+      "base_number": "39",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 36617,
+      "same_route_coverage_hours": 44.01888888888889
+    },
+    {
+      "route": "39.26",
+      "base_number": "39",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 14,
+      "same_route_coverage_hours": 0.019444444444444445
+    },
+    {
+      "route": "39.27",
+      "base_number": "39",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 1978,
+      "same_route_coverage_hours": 2.3266666666666667
+    },
+    {
+      "route": "39.28",
+      "base_number": "39",
+      "vehicles": [
+        "7752"
+      ],
+      "observations": 1696,
+      "same_route_coverage_hours": 1.5041666666666667
+    },
+    {
+      "route": "40.1",
+      "base_number": "40",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 65872,
+      "same_route_coverage_hours": 27.752726666666668
+    },
+    {
+      "route": "40.2",
+      "base_number": "40",
+      "vehicles": [
+        "3119",
+        "3139"
+      ],
+      "observations": 77236,
+      "same_route_coverage_hours": 31.501560555555557
+    },
+    {
+      "route": "40.31",
+      "base_number": "40",
+      "vehicles": [
+        "3119"
+      ],
+      "observations": 2110,
+      "same_route_coverage_hours": 2.3916666666666666
+    },
+    {
+      "route": "40.39",
+      "base_number": "40",
+      "vehicles": [
+        "3119"
+      ],
+      "observations": 697,
+      "same_route_coverage_hours": 1.0127777777777778
+    },
+    {
+      "route": "40.40",
+      "base_number": "40",
+      "vehicles": [
+        "3119"
+      ],
+      "observations": 1519,
+      "same_route_coverage_hours": 1.5947222222222222
+    },
+    {
+      "route": "65.1",
+      "base_number": "65",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 10410,
+      "same_route_coverage_hours": 4.180462777777778
+    },
+    {
+      "route": "65.2",
+      "base_number": "65",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 7399,
+      "same_route_coverage_hours": 3.3784722222222223
+    },
+    {
+      "route": "65.3",
+      "base_number": "65",
+      "vehicles": [
+        "7821"
+      ],
+      "observations": 720,
+      "same_route_coverage_hours": 0.4770277777777778
+    },
+    {
+      "route": "100.1",
+      "base_number": "100",
+      "vehicles": [
+        "0210"
+      ],
+      "observations": 42418,
+      "same_route_coverage_hours": 8.676693055555555
+    },
+    {
+      "route": "100.2",
+      "base_number": "100",
+      "vehicles": [
+        "0210"
+      ],
+      "observations": 36199,
+      "same_route_coverage_hours": 7.346234166666667
+    },
+    {
+      "route": "100.4",
+      "base_number": "100",
+      "vehicles": [
+        "0210"
+      ],
+      "observations": 1274,
+      "same_route_coverage_hours": 0.3239088888888889
+    }
+  ],
+  "nonzero_route_numbers": [
+    1,
+    3,
+    6,
+    7,
+    10,
+    24,
+    30,
+    39,
+    40,
+    65,
+    100
+  ],
+  "nonzero_route_variants": 36,
+  "total_hours": 470.5256488888889
+}

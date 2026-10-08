@@ -1,0 +1,24 @@
+# Private source archives, telemetry, database, history and generated reports.
+/materials/
+/data/
+/tmp/
+/analysis/*
+!/analysis/*.py
+!/analysis/coverage-summary.json
+!/analysis/file-inventory.json
+!/analysis/osm-spb-public.json
+
+# Local environments and credentials.
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+node_modules/
+.codex/
+.agents/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
