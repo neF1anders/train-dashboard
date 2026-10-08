@@ -1,0 +1,88 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {chromium}=require('C:/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const ms=t=>new Date(t+10800000).toISOString().slice(11,23);
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+ const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[],requests=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/api/'))requests.push(r.url());});
+ try{
+  const start=Date.parse('2026-09-14T05:08:49.389+03:00'),end=Date.parse('2026-09-14T05:09:24.680+03:00');
+  await page.goto(`http://127.0.0.1:5173/#work?vehicle=3139&day=2026-09-14&route=6&start=${start}&end=${end}&time=${start}&mode=3d`);
+  await page.waitForFunction(()=>!document.querySelector('#work-view').hidden&&document.querySelector('#current-handle').textContent!=='—');
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('.timeline-panel').evaluate(e=>getComputedStyle(e).position),'relative');
+  const timelineBefore=await page.locator('.timeline-panel').boundingBox();
+  await page.evaluate(()=>window.scrollTo(0,550));
+  const scroll=await page.evaluate(()=>window.scrollY),timelineAfter=await page.locator('.timeline-panel').boundingBox();
+  assert(scroll>400&&Math.abs(timelineBefore.y-timelineAfter.y-scroll)<2,'Timeline still obscures content');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.click('#timeline-zoom');
+  const initial=await page.locator('#cursor-time').innerText(),overview=await page.locator('#overview').boundingBox();
+  const x=overview.x+35+(overview.width-47)*.4,y=overview.y+80;
+  await page.mouse.move(x,y);await page.waitForTimeout(180);
+  assert(await page.locator('#preview-badge').isVisible());assert.notEqual(await page.locator('#cursor-time').innerText(),initial);
+  await page.mouse.move(20,90);await page.waitForTimeout(80);assert.equal(await page.locator('#cursor-time').innerText(),initial);
+  await page.mouse.click(x,y);await page.waitForTimeout(250);const committed=await page.locator('#cursor-time').innerText();
+  await page.mouse.move(20,90);await page.waitForTimeout(80);assert.equal(await page.locator('#cursor-time').innerText(),committed);
+  const widthBefore=(await page.locator('#scene').boundingBox()).width;
+  await page.click('#map-toggle');await page.waitForTimeout(350);
+  assert.equal(await page.locator('#map-panel').evaluate(e=>getComputedStyle(e).position),'fixed');
+  assert.equal((await page.locator('#scene').boundingBox()).width,widthBefore);
+  assert.equal(await page.locator('#city-map').getAttribute('data-route'),'6');
+  assert((await page.locator('.map-event-row').count())>0);
+  await page.evaluate(async()=>{const {CityMap}=await import('/map.js');const original=CityMap.prototype.draw;CityMap.prototype.draw=function(...a){const result=original.apply(this,a);window.testClusters=this.clusters.map(c=>({x:c.x,y:c.y,count:c.events.length}));return result;};});
+  await page.click('#map-fit');await page.waitForTimeout(100);
+  const cluster=await page.evaluate(()=>window.testClusters.find(c=>c.count>1&&c.x>20&&c.y>40));assert(cluster);
+  const mapBox=await page.locator('#city-map').boundingBox();await page.mouse.click(mapBox.x+cluster.x,mapBox.y+cluster.y);
+  await page.locator('#map-cluster-caption').waitFor({state:'visible'});
+  assert((await page.locator('#map-event-count').innerText()).startsWith(String(cluster.count)));
+  const id=await page.locator('.map-event-row').first().getAttribute('data-event-id');
+  const trip=await(await page.request.get('http://127.0.0.1:5173/api/trip?vehicle=3139&day=2026-09-14&route=6')).json();
+  const chosen=trip.episodes.find(e=>String(e.id)===id);assert(chosen);
+  await page.locator('.map-event-row').first().click();
+  await page.waitForFunction(t=>document.querySelector('#cursor-time').textContent===t,ms(chosen.start));
+  await page.screenshot({path:'tmp/revised-map.png'});
+  await page.keyboard.press('Escape');await page.locator('#map-panel').waitFor({state:'hidden'});
+  await page.fill('#range-start','2026-09-14T05:08:49.389');await page.fill('#range-end','2026-09-14T05:09:24.68');await page.click('#apply-range');
+  await page.locator('#cursor-slider').evaluate((e,t)=>{e.value=t;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));},start);
+  await page.waitForTimeout(250);
+  await page.evaluate(async()=>{
+   const {Scene}=await import('/scene.js');window.drawTimes=[];const original=Scene.prototype.draw;
+   Scene.prototype.draw=function(...args){const start=performance.now();const out=original.apply(this,args);window.drawTimes.push(performance.now()-start);return out;};
+  });
+  await page.selectOption('#play-speed','4');const networkStart=requests.length;await page.click('#play');await page.waitForTimeout(4000);
+  assert((await page.locator('#play').innerText()).includes('Пауза'),'Playback unexpectedly stopped in a known continuous interval');
+  const movingTime=await page.locator('#cursor-time').innerText();assert.notEqual(movingTime,ms(start));
+  await page.click('#play');const times=await page.evaluate(()=>window.drawTimes.sort((a,b)=>a-b));
+  const rendering={frames:times.length,p95:times[Math.floor(times.length*.95)],max:times.at(-1)};
+  assert(times.length>60,'Too few rendered frames');assert(rendering.p95<50,'Scene rendering exceeds 50 ms at p95');
+  const playbackRequests=requests.slice(networkStart);assert(playbackRequests.filter(x=>x.includes('/api/window')).length<5,'Window requested every frame');
+  await page.screenshot({path:'tmp/revised-workspace.png',fullPage:true});
+  await page.click('#map-fab');await page.waitForTimeout(250);
+  const layouts=[];
+  for(const width of[1440,1024,768,390,320]){
+   await page.setViewportSize({width,height:1100});await page.waitForTimeout(100);
+   const layout=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,mapWidth:document.querySelector('#map-panel').getBoundingClientRect().width}));
+   assert(layout.scroll<=layout.client+1);assert(layout.mapWidth<=width+1);layouts.push({width,...layout});
+  }
+  await page.screenshot({path:'tmp/revised-map-mobile.png'});
+  await page.click('#map-close');await page.setViewportSize({width:1440,height:1100});
+  const gap=await page.evaluate(async track=>{const{prepareTrack}=await import('/motion.js');const m=prepareTrack(track);return m.gaps.find(g=>g.end-g.start>30000&&m.before(g.start)?.run.length>10);},trip.track);
+  assert(gap,'No real gap available for regression');
+  await page.goto(`http://127.0.0.1:5173/#work?vehicle=3139&day=2026-09-14&route=6&start=${gap.start-1000}&end=${gap.end+3000}&time=${gap.start-200}`);
+  await page.reload();await page.waitForFunction(()=>document.querySelector('#current-action').textContent!=='Загрузка сигналов…');await page.waitForTimeout(350);
+  await page.click('#play');await page.waitForTimeout(600);assert((await page.locator('#play').innerText()).includes('Воспроизвести'));
+  await page.locator('#scene-gap').waitFor({state:'visible'});assert.equal(await page.locator('#cursor-time').innerText(),ms(gap.start));
+  await page.click('#next-observation');await page.waitForFunction(t=>document.querySelector('#cursor-time').textContent===t,ms(gap.end));
+  await page.click('#back-home');
+  await page.selectOption('#vehicle-select','3119');await page.selectOption('#date-select','2026-10-05');await page.selectOption('#route-select','all');await page.click('#open-trip');
+  await page.waitForFunction(()=>document.querySelector('#source-badge').textContent==='CSV');
+  await page.click('#map-toggle');await page.waitForTimeout(200);
+  assert.notEqual(await page.locator('#map-route').inputValue(),'all');assert.notEqual(await page.locator('#city-map').getAttribute('data-route'),'all');
+  assert.equal(errors.length,0,errors.join('\n'));
+  const result={scrolling:true,timelinePreviewAndCommit:true,drawer:true,incidentNavigation:true,mapMarkerClusters:true,gapPlaybackBoundary:true,singleRouteMap:true,playback:true,rendering,playbackRequests:playbackRequests.length,layouts,errors};
+  fs.writeFileSync('tmp/ui-regression-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ }catch(e){await page.screenshot({path:'tmp/revised-failure.png',fullPage:true});console.log('ERRORS',errors,'NOTICE',await page.locator('#notification').textContent());throw e;}
+ finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exit(1);});

@@ -29,7 +29,7 @@ const {chromium}=require('C:/Users/admin/.cache/codex-runtimes/codex-primary-run
     const gap=positionAt([{t:0,lat:59.95,lon:30.3},{t:60000,lat:59.96,lon:30.3}],30000);
     const before=positionAt(track,-1),future=positionAt(track,5000,{t:5500,pos:3,segment:'a'});return {fused:fused.method,reset:reset.method,gap,before,future:future.method};
   });
-  if(invariant.fused!=='odometry'||invariant.reset!=='gps'||invariant.gap!==null||invariant.before!==null||invariant.future!=='gps')throw Error('Odometry/gap invariant failed');
+  if(invariant.fused!=='smoothed-gps'||invariant.reset!==invariant.fused||invariant.gap!==null||invariant.before!==null||invariant.future!==invariant.fused)throw Error('Rendering must be independent of discrete odometry snapshots and preserve gaps');
   if(errors.length)throw Error(errors.join('\n'));
   console.log(JSON.stringify({playback:true,zoom:true,snapshotTime:true,geometryViews:true,odometry:invariant,pageErrors:errors}));
  }finally{await browser.close();}

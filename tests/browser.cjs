@@ -38,7 +38,7 @@ const fs=require('fs');
   const savedTime=await page.locator('#cursor-time').innerText();await page.waitForTimeout(750);
   await page.reload();await page.waitForFunction(()=>!document.querySelector('#work-view').hidden&&document.querySelector('#current-speed').textContent!=='—');
   if(await page.locator('#cursor-time').innerText()!==savedTime)throw Error('Reload did not restore cursor');
-  await page.click('#back-home');await page.locator('.history-item').first().waitFor();
+  if(await page.locator('#map-panel').isVisible())await page.click('#map-close');await page.click('#back-home');await page.locator('.history-item').first().waitFor();
   await page.selectOption('#vehicle-select','3119');await page.selectOption('#date-select','2026-10-05');await page.selectOption('#route-select','all');
   await page.click('#open-trip');await page.waitForFunction(()=>document.querySelector('#source-badge').textContent==='CSV');
   const results=[];

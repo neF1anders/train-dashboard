@@ -19,6 +19,36 @@ def thin(rows,limit=4000):
 def gaps(rows):
     ts=sorted(set(r['t'] for r in rows));return [[a,b] for a,b in zip(ts,ts[1:]) if b-a>30000]
 
+def motion_track(rows):
+    """Prefer one source throughout each continuous JSON run, not once per second.
+
+    Overlapping CSV positions can be delayed relative to JSON. Alternating them
+    creates false reversals. CSV fills only periods outside JSON coverage.
+    Original records are still available through window/frame/evidence APIs.
+    """
+    detailed=[r for r in rows if r['family']=='json']
+    coverage=[]
+    for r in detailed:
+        if coverage and r['t']-coverage[-1][1]<=30000 and r['route']==coverage[-1][2]:coverage[-1][1]=r['t']
+        else:coverage.append([r['t'],r['t'],r['route']])
+    selected=[];j=0
+    for r in rows:
+        while j<len(coverage) and coverage[j][1]+1000<r['t']:j+=1
+        overlaps=j<len(coverage) and coverage[j][0]-1000<=r['t']<=coverage[j][1]+1000 and coverage[j][2]==r['route']
+        if r['family']=='json' or not overlaps:selected.append(r)
+    # Limit temporal density without changing source at a bucket boundary.
+    buckets={}
+    for r in selected:
+        key=(r['t']//1000,r['route'])
+        if key not in buckets or (r['family']=='json' and buckets[key]['family']!='json'):buckets[key]=r
+    ordered=sorted(buckets.values(),key=lambda r:r['t']);result=[]
+    for r in ordered:
+        if result and r['route']==result[-1]['route'] and r['t']-result[-1]['t']<800:
+            if r['family']=='json' and result[-1]['family']!='json':result[-1]=r
+            continue
+        result.append(r)
+    return result
+
 class Handler(SimpleHTTPRequestHandler):
     server_version='SiriusMVP/1.0'
     def __init__(self,*a,**kw):super().__init__(*a,directory=str(ROOT/'web'),**kw)
@@ -32,13 +62,13 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         url=urlparse(self.path)
         if not url.path.startswith('/api/'):
-            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/favicon.svg'):
+            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/motion.js','/timeline.js','/favicon.svg'):
                 self.send_error(404);return
             return super().do_GET()
         try:
             p={k:v[0] for k,v in parse_qs(url.query).items()};result=self.api_get(url.path,p);self.send_json(result)
         except (ValueError,KeyError) as e:self.send_json({'error':str(e)},400)
-        except (BrokenPipeError,ConnectionResetError):pass
+        except (BrokenPipeError,ConnectionResetError,ConnectionAbortedError):pass
         except Exception:
             traceback.print_exc();self.send_json({'error':'Ошибка обработки запроса. Подробности в журнале сервера.'},500)
     def do_POST(self):
@@ -50,7 +80,7 @@ class Handler(SimpleHTTPRequestHandler):
             if not 0<length<=200000:raise ValueError('Недопустимый размер запроса')
             body=json.loads(self.rfile.read(length));result=self.api_post(urlparse(self.path).path,body);self.send_json(result)
         except (ValueError,KeyError,TypeError) as e:self.send_json({'error':str(e)},400)
-        except (BrokenPipeError,ConnectionResetError):pass
+        except (BrokenPipeError,ConnectionResetError,ConnectionAbortedError):pass
         except Exception:
             traceback.print_exc();self.send_json({'error':'Не удалось сохранить результат. Подробности в журнале сервера.'},500)
     def api_get(self,path,p):
@@ -77,11 +107,7 @@ class Handler(SimpleHTTPRequestHandler):
                 where='vehicle=? AND day=?';args=[vehicle,day]
                 if route!='all':where+=' AND route=?';args.append(route)
                 raw=[public(r) for r in con.execute('SELECT '+PUBLIC_COLUMNS+" FROM records WHERE "+where+" AND type='Track' ORDER BY t,CASE family WHEN 'json' THEN 0 ELSE 1 END",args)]
-                buckets={}
-                for r in raw:
-                    key=r['t']//1000
-                    if key not in buckets or (r['family']=='json' and buckets[key]['family']!='json'):buckets[key]=r
-                track=sorted(buckets.values(),key=lambda r:r['t'])
+                track=motion_track(raw)
                 # A rare event-only route still remains selectable and inspectable.
                 if not track:track=[public(r) for r in con.execute('SELECT '+PUBLIC_COLUMNS+' FROM records WHERE '+where+' ORDER BY t LIMIT 5000',args)]
                 if not track:raise ValueError('Нет записей для выбранных фильтров')
