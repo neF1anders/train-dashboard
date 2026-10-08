@@ -6,6 +6,7 @@ from functools import lru_cache
 from .storage import ROOT,DATA,VERSION,init,connect,meta,public,raw_record,PUBLIC_COLUMNS
 from .analysis import scope,analyze,answer
 from . import geo
+from .observations import snapshots,link_episodes
 import argparse,json,gzip,math,traceback,uuid,sqlite3
 
 def thin(rows,limit=4000):
@@ -62,7 +63,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         url=urlparse(self.path)
         if not url.path.startswith('/api/'):
-            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/motion.js','/timeline.js','/favicon.svg'):
+            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/ground.js','/camera.js','/satellite.js','/motion.js','/timeline.js','/favicon.svg'):
                 self.send_error(404);return
             return super().do_GET()
         try:
@@ -84,6 +85,11 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception:
             traceback.print_exc();self.send_json({'error':'Не удалось сохранить результат. Подробности в журнале сервера.'},500)
     def api_get(self,path,p):
+        if path=='/api/settings':
+            settings_path=DATA/'local-settings.json'
+            settings=json.loads(settings_path.read_text(encoding='utf-8')) if settings_path.exists() else {}
+            allowed=settings.get('imagery',{}).get('esri_allowed') is True
+            return {'imagery':{'esri_allowed':allowed,'default_style':'satellite' if allowed else 'streets'}}
         if path=='/api/health':
             progress_path=DATA/'import-progress.json'
             progress=json.loads(progress_path.read_text(encoding='utf-8')) if progress_path.exists() else {'status':'not_imported'}
@@ -112,7 +118,8 @@ class Handler(SimpleHTTPRequestHandler):
                 if not track:track=[public(r) for r in con.execute('SELECT '+PUBLIC_COLUMNS+' FROM records WHERE '+where+' ORDER BY t LIMIT 5000',args)]
                 if not track:raise ValueError('Нет записей для выбранных фильтров')
                 eps=[dict(r) for r in con.execute('SELECT * FROM episodes WHERE '+where+' ORDER BY start',args)]
-                rich=[dict(r) for r in con.execute('SELECT id,t FROM records WHERE '+where+' AND telemetry=1 ORDER BY t',args)]
+                rich=snapshots(con.execute('SELECT * FROM records WHERE '+where+' AND telemetry=1 ORDER BY t,id',args))
+                link_episodes(eps,rich)
                 bounds=con.execute('SELECT MIN(t),MAX(t) FROM records WHERE '+where,args).fetchone()
                 # Full sparse track is retained for repeat-pass selection; graph is separately aggregated.
                 return {'vehicle':vehicle,'day':day,'route':route,'start':bounds[0],'end':bounds[1],

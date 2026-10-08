@@ -24,6 +24,28 @@ function element(tag,text,className){const e=document.createElement(tag);if(text
 function options(select,values,chosen){select.replaceChildren();values.forEach(([value,label])=>select.add(new Option(label,value)));if(values.some(v=>v[0]===chosen))select.value=chosen;}
 function setTheme(theme){document.documentElement.dataset.theme=theme;localStorage.setItem('sirius-theme',theme);redraw();}
 const scene=new Scene($('#scene'));
+scene.satellite.authorized=localStorage.getItem('sirius-esri-consent')==='tiles-v1';
+async function loadSettings(){
+  const settings=await api('settings');scene.satellite.authorized ||= settings.imagery.esri_allowed;
+  const preference=localStorage.getItem('sirius-ground-style');
+  scene.groundStyle=['satellite','streets'].includes(preference)?preference:settings.imagery.default_style;
+  $('#ground-style').value=scene.groundStyle;
+}
+scene.onCameraChange=()=>{
+  $('#camera-angle').value=scene.angle;$('#camera-pitch').value=scene.camera.pitch;$('#scene-zoom').value=scene.zoom;
+  $('#camera-follow-state').textContent=scene.camera.following?'Камера за вагоном':'Свободный обзор';
+};
+let groundStatusKey='';
+scene.onGroundStatus=status=>{
+  const key=[scene.showGround,scene.groundStyle,status].join('|');if(key===groundStatusKey)return;groundStatusKey=key;
+  $('#ground-style').disabled=!scene.showGround;$('#ground-opacity').disabled=!scene.showGround;$('#ground-attribution').hidden=!scene.showGround;
+  $('#satellite-consent').hidden=!scene.showGround||scene.groundStyle!=='satellite'||scene.satellite.authorized;
+  $('#ground-status').textContent=!scene.showGround?'':scene.groundStyle==='streets'?(status==='ready'?'Локальная карта':status==='unavailable'?'План недоступен':'Загрузка плана…'):({ready:'Снимки загружены',loading:'Загрузка спутниковых снимков…',partial:'Часть снимков недоступна',unavailable:'Снимки недоступны · показан план улиц','approval-required':'Ожидает разрешения на загрузку'})[status]||'';
+  const link=element('a',scene.groundStyle==='satellite'?'Esri World Imagery':'© OpenStreetMap contributors');link.target='_blank';link.rel='noopener noreferrer';
+  link.href=scene.groundStyle==='satellite'?'https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9':'https://www.openstreetmap.org/copyright';
+  $('#ground-attribution').replaceChildren(link,document.createTextNode(scene.groundStyle==='satellite'?' · Esri, Vantor, Earthstar Geographics, and the GIS User Community. Съёмка не привязана ко времени события.':' · ODbL. План без высот; ширина улиц условная.'));
+  if(scene.groundStyle==='satellite'&&status!=='ready'){const fallback=element('a','© OpenStreetMap contributors · ODbL');fallback.href='https://www.openstreetmap.org/copyright';fallback.target='_blank';fallback.rel='noopener noreferrer';$('#ground-attribution').append(document.createTextNode(' Фоновый план: '),fallback);}
+};
 const map=new CityMap($('#city-map'),items=>{
   passes=items;$('#map-place-choice').hidden=false;
   options($('#map-pass'),items.map((p,i)=>[String(i),`${time(p.start)}${p.end>p.start?'–'+time(p.end):''} · ${n(p.record.speed)} км/ч`]),'0');
@@ -36,6 +58,7 @@ const map=new CityMap($('#city-map'),items=>{
   $('.map-incidents').scrollIntoView({block:'nearest',behavior:'smooth'});
 });
 const timeline=new Timeline($('#overview'),{preview:previewMoment,commit:safe(commitMoment),leave:clearPreview});
+map.onObservations=items=>{renderMapObservations(items);$('#map-status').textContent='Точка наблюдения: выберите время снимка ниже. Это положение вагона, не светофора.';$('#map-observation-panel').scrollIntoView({block:'nearest',behavior:'smooth'});};
 
 async function boot(){const theme=localStorage.getItem('sirius-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme;$('#open-trip').disabled=true;const h=await api('health');$('#server-status').textContent='Сервер доступен';if(h.import.status!=='ready'){$('#import-state').hidden=false;$('#import-state').textContent=h.import.status==='error'?'Ошибка импорта: '+h.import.error:`Подготовка архива: ${h.import.current||0} из ${h.import.total||'…'} файлов. Каталог появится после индексации.`;setTimeout(()=>safe(boot)(),2500);return;}$('#import-state').hidden=true;const data=await api('catalog');catalog=data.entries;if(!catalog.length)throw Error('Каталог пока пуст');$('#archive-hours').textContent=n(data.coverage.total_hours??data.coverage.vehicles.reduce((s,r)=>s+r.combined_hours,0));const vehicles=[...new Set(catalog.map(r=>r.vehicle))];$('#catalog-summary').textContent=`${vehicles.length} вагонов · ${data.import.records.toLocaleString('ru-RU')} записей`;$('#archive-caption').textContent='14 сентября — 6 октября 2026 · с остановками';options($('#vehicle-select'),vehicles.map(v=>[v,'Вагон '+v]),state.vehicle);updateDates();$('#open-trip').disabled=false;await loadHistory();if(location.hash.startsWith('#work?')){const p=Object.fromEntries(new URLSearchParams(location.hash.slice(6)));await openTrip(p);} }
 function updateDates(){const vehicle=$('#vehicle-select').value;const days=[...new Set(catalog.filter(r=>r.vehicle===vehicle).map(r=>r.day))];options($('#date-select'),days.map(d=>[d,date(Date.parse(d+'T12:00:00+03:00'))]),$('#date-select').value||state.day);updateRoutes();}
@@ -66,9 +89,10 @@ async function openTrip(input){
     scene.setTrack(trip.track,vehicle);motion=scene.model;configureMap();
     passes=[];$('#map-pass').replaceChildren();$('#map-place-choice').hidden=true;
     $('#map-set-start').disabled=true;$('#map-seek').disabled=true;
-    options($('#snapshot-select'),[['','Выберите снимок'],...trip.snapshots.map(r=>[String(r.id),time(r.t,true)])],'');
+    options($('#snapshot-select'),[['','Выберите снимок'],...trip.snapshots.map(r=>[String(r.id),time(r.t,true)+' · '+(r.subsystem==='TrafficLightSubSys'?'Светофоры':'Объект')])],'');
     $('#go-snapshot').disabled=!trip.snapshots.length;scene.snapshot=null;
-    $('#snapshot-content').textContent=trip.snapshots.length?`Доступно ${trip.snapshots.length} расширенных снимков. Выберите время для просмотра.`:'В этой записи нет расширенных снимков объектов. Геометрия препятствия неизвестна.';
+    $('#snapshot-content').textContent=trip.snapshots.length?`Доступно ${trip.snapshots.length} уникальных снимков распознавания. Это данные об объектах, не фотографии. Выберите время для просмотра.`:'В этой записи нет расширенных снимков объектов. Геометрия препятствия неизвестна.';
+    renderEventContext(trip.episodes.find(e=>e.start<=state.time&&e.end>=state.time));
     scene.showSnapshot=false;$('#show-snapshot').checked=false;renderRange();renderMode();renderCurrent();await loadWindow();
     if(state.analysisId){try{analysis=await api('analysis',{id:state.analysisId});renderAnalysis();}catch(e){state.analysisId=null;notice(e.message);}}
     saveView();window.scrollTo({top:0,behavior:'instant'});
@@ -84,11 +108,12 @@ function renderRange(){
 function analysisStatus(){if(!analysis){$('#analysis-state').textContent='Выберите интервал и запустите анализ.';$('#analysis-state').classList.remove('error');return;}const stale=analysis.start!==state.start||analysis.end!==state.end;$('#analysis-state').textContent=(stale?'Для предыдущего интервала. ':'Сохранено · ')+time(analysis.start)+'–'+time(analysis.end)+(stale?' Выполните новый анализ.':' · правила '+analysis.rules_version);$('#analysis-state').classList.toggle('error',stale);}
 async function loadWindow(){
   const token=++windowVersion;windowAbort?.abort();windowAbort=new AbortController();
+  $('#play').disabled=true;
   const scope={vehicle:state.vehicle,route:state.route,start:state.start,end:state.end};
   const d=await api('window',scope,undefined,windowAbort.signal);if(token!==windowVersion)return;
   windowData=d;exact=null;timelineKey='';
   if(!d.sampled){playbackData=d;bufferAbort?.abort();bufferPending=null;bufferVersion++;}
-  renderCurrent();await ensurePlaybackBuffer(state.time);await fetchFrame();saveView();
+  renderCurrent();await ensurePlaybackBuffer(state.time);if(token===windowVersion)$('#play').disabled=false;await fetchFrame();saveView();
 }
 async function ensurePlaybackBuffer(t){
   if(playbackData&&t>=playbackData.start&&t<=playbackData.end-8000)return;
@@ -156,8 +181,10 @@ async function seek(t,{pause=true,exactRecord=null}={}){
   renderCurrent();if(pause){await ensurePlaybackBuffer(state.time);await fetchFrame();saveView();}
 }
 function renderMode(){
-  scene.mode=state.mode;scene.angle=+$('#camera-angle').value;scene.zoom=+$('#scene-zoom').value;
+  scene.mode=state.mode;scene.angle=+$('#camera-angle').value;scene.zoom=+$('#scene-zoom').value;scene.camera.pitch=+$('#camera-pitch').value;
   $('#view-2d').setAttribute('aria-pressed',state.mode==='2d');$('#view-3d').setAttribute('aria-pressed',state.mode==='3d');$('#camera-label').hidden=state.mode==='2d';
+  $('#pitch-label').hidden=state.mode==='2d';$('#camera-follow-state').textContent=scene.camera.following?'Камера за вагоном':'Свободный обзор';
+  $('#scene-controls-help').textContent=state.mode==='2d'?'Перетаскивание — сдвиг · колесо — масштаб · двойной щелчок — к вагону':'Левая кнопка — поворот · правая или Shift — сдвиг · колесо — масштаб · двойной щелчок — к вагону';
   const opening=state.map&&$('#map-panel').hidden;$('#map-panel').hidden=!state.map;$('#map-backdrop').hidden=!state.map;document.body.classList.toggle('map-is-open',state.map);
   $('#map-toggle').setAttribute('aria-expanded',state.map);$('#map-fab').setAttribute('aria-expanded',state.map);map.active=state.map;
   scene.draw();if(state.map){if(opening){map.fit();requestAnimationFrame(()=>$('#map-close').focus());}map.draw();}
@@ -182,7 +209,7 @@ async function navigateMoment(t){
 }
 async function commitMoment(t,event){timeline.hover=null;if(event)return selectEvent(event);return navigateMoment(t);}
 async function selectEvent(event){
-  clearPreview();state.time=event.start;
+  clearPreview();state.time=event.start;renderEventContext(event);
   await applyRange(Math.max(trip.start,event.start-15000),Math.min(trip.end,Math.max(event.end+15000,event.start+30000)));
   await seek(event.start);
 }
@@ -193,7 +220,47 @@ function evidenceButton(id,text){const b=element('button',text||'Запись #'
 function renderAnalysis(){if(!analysis)return;$('#analysis-result').hidden=false;$('#analysis-summary').textContent=analysis.summary;analysisStatus();const cards=$('#evidence-cards');cards.replaceChildren();const priority=['intervention','brake','control','warning','speed','target'];const chosen=[...analysis.facts].sort((a,b)=>priority.indexOf(a.kind)-priority.indexOf(b.kind)).slice(0,3).sort((a,b)=>a.t-b.t);for(const f of chosen){const b=element('button',undefined,'evidence-card');b.type='button';b.dataset.evidenceId=f.evidence_ids[0];b.append(element('span',time(f.t,true),'time'),element('strong',f.title),element('p',f.text));b.onclick=safe(()=>evidence(f.evidence_ids[0]));cards.append(b);}const all=$('#all-facts');all.replaceChildren();for(const f of [...analysis.facts].sort((a,b)=>a.t-b.t)){const row=element('div',undefined,'fact-row'),body=element('div');body.append(element('h3',f.title),element('p',f.text));for(const id of f.evidence_ids)body.append(evidenceButton(id));row.append(element('span',time(f.t,true),'small tabular'),body);all.append(row);}$('#analysis-limits').replaceChildren(...analysis.limitations.map(t=>element('li',t)));$('#answer').replaceChildren();}
 async function doAnalyze(){const button=$('#analyze-button');button.disabled=true;button.textContent='Анализируем…';const request={vehicle:state.vehicle,route:state.route,start:state.start,end:state.end};try{const result=await api('analyze',{},request);if(result.vehicle!==state.vehicle||result.route!==state.route)return;analysis=result;state.analysisId=result.id;renderAnalysis();urlState();await api('history',{}, {id:'analysis:'+result.id,kind:'analysis',state:{...serialized(),start:result.start,end:result.end,time:result.start,analysisId:result.id}});notice('Анализ сохранён. Каждое утверждение можно проверить по исходной записи.');}finally{button.disabled=false;button.textContent='Анализировать интервал';}}
 async function ask(question){if(!analysis)throw Error('Сначала выполните анализ выбранного интервала');if(analysis.start!==state.start||analysis.end!==state.end)throw Error('Интервал изменился. Выполните новый анализ перед вопросом.');$('#answer').textContent='Проверяем записи…';const a=await api('question',{}, {analysis_id:analysis.id,question});$('#answer').replaceChildren(element('p',a.text));for(const id of a.evidence_ids)$('#answer').append(evidenceButton(id));}
-async function selectSnapshot(){const id=+$('#snapshot-select').value;if(!id){scene.snapshot=null;return;}const d=await api('record',{id});rawCache.set(id,d);const tel=d.raw.telemetry_data;const stamp=Date.parse(d.raw.telemetry_timestamp)||d.record.t;scene.snapshot={data:tel,t:stamp};const container=$('#snapshot-content');container.replaceChildren(element('p',`Снимок ${time(stamp,true)} · событие ${time(d.record.t,true)} · ${tel.subsystem}`));const objects=tel.object?[tel.object]:(tel.trafficLights||[]);const table=element('table',undefined,'snapshot-table');const head=element('tr');for(const text of ['Тип / состояние','x / y','Сигнал'])head.append(element('th',text));table.append(head);objects.slice(0,30).forEach(o=>{const row=element('tr');row.append(element('td',`${o.type} · ${o.state}`),element('td',`${n(o.pose?.x)} / ${n(o.pose?.y)}`),element('td',o.tlSignal||'—'));table.append(row);});container.append(table,element('p','Оси и единицы локальных координат не подтверждены. На схеме условно x — поперёк, y — вперёд. Потерянные и прогнозируемые объекты не считаются наблюдаемыми.','small'));scene.draw();}
+const objectName=type=>({CAR:'Автомобиль',HUMAN:'Человек',TRAFFIC_LIGHT:'Светофор'})[type]||type||'Объект';
+const signalName=signal=>({CAR_STOP:'красный для автомобилей',CAR_YELLOW:'жёлтый для автомобилей',CAR_FORWARD:'разрешающий для автомобилей',RU_TRAM_STOP:'запрещающий для трамвая',RU_TRAM_FORWARD:'разрешающий для трамвая',PEDESTRIAN_STOP:'запрещающий для пешеходов',PEDESTRIAN_FORWARD:'разрешающий для пешеходов'})[signal]||signal;
+function snapshotDescription(s){
+  const observed=s.objects.filter(o=>o.state==='TRACKED'),other=s.objects.filter(o=>o.state!=='TRACKED');
+  const labels=[...new Set(observed.map(o=>o.type==='TRAFFIC_LIGHT'?'Светофор: '+signalName(o.tlSignal||'сигнал не указан'):objectName(o.type)))];
+  // Keep unknown states explicit rather than silently interpreting them as visible objects.
+  const otherLabels=[...new Set(other.map(o=>`${objectName(o.type)} — ${({NO_OBS_TRACKED:'прогноз без наблюдения',LOST:'потерян'})[o.state]||o.state||'статус неизвестен'}`))];
+  return (labels.length?'Наблюдались (TRACKED): '+labels.join('; ')+'.':'Нет объектов со статусом TRACKED.')+(otherLabels.length?' '+otherLabels.join('; ')+'.':'');
+}
+function renderEventContext(event){
+  $('#event-context').hidden=!event;if(!event)return;
+  $('#event-context-title').textContent='Выбрано: '+eventName(event).toLowerCase();$('#event-context-time').textContent=time(event.start,true);
+  const linked=event.snapshot_links||[],target=({Obstacle:'препятствие',TrafficLightSignal:'сигнал светофора',ZoneSpeedLimit:'ограничение скорости'})[event.target]||event.target||'не указана';
+  $('#event-context-summary').textContent=`Цель в журнале: ${target}. `+(linked.length?'В записи события есть ссылка на снимок распознавания. Это связь, зарегистрированная системой, а не доказательство причины торможения.':'У этого события нет связанного снимка объектов или фотографии. Конкретный объект и его положение по этим записям восстановить нельзя.');
+  const container=$('#event-context-evidence');container.replaceChildren(evidenceButton(event.evidence_id,'Исходное событие'));
+  for(const link of linked){
+    const s=trip.snapshots.find(s=>s.id===link.snapshot_id);if(!s)continue;
+    const row=element('div',undefined,'snapshot-evidence'),actions=element('div',undefined,'inline');
+    row.append(element('strong',snapshotDescription(s)),element('p',`Снимок ${time(s.t,true)} · ${link.delta_ms===0?'совпадает по времени с записью события':`${n(Math.abs(link.delta_ms)/1000,3)} с ${link.delta_ms>0?'после':'до'} связанной записи события`}.`));
+    const open=element('button','Открыть схему снимка','small-button');open.dataset.snapshotId=s.id;open.onclick=safe(()=>openSnapshot(s.id));
+    actions.append(open,evidenceButton(link.record_id,'Проверить связь в логе'));row.append(actions);container.append(row);
+  }
+}
+async function selectSnapshot(){
+  const id=+$('#snapshot-select').value,version=loadVersion;
+  if(!id){scene.snapshot=null;$('#snapshot-content').textContent='Выберите снимок распознавания.';scene.draw();return;}
+  const d=rawCache.get(id)||await api('record',{id});if(version!==loadVersion||+$('#snapshot-select').value!==id)return;rawCache.set(id,d);
+  const tel=d.raw.telemetry_data,stamp=Date.parse(d.raw.telemetry_timestamp);scene.snapshot={data:tel,t:stamp};
+  const container=$('#snapshot-content'),metadata=trip.snapshots.find(s=>s.id===id);
+  container.replaceChildren(element('p',`Снимок ${time(stamp,true)} · ${tel.subsystem} · данные распознавания, не фотография`));
+  if(metadata)container.append(element('p',snapshotDescription(metadata)));
+  const objects=tel.object?[tel.object]:(tel.trafficLights||[]),table=element('table',undefined,'snapshot-table'),head=element('tr');
+  for(const text of ['Тип / состояние','x / y','Сигнал'])head.append(element('th',text));table.append(head);
+  objects.slice(0,30).forEach(o=>{const row=element('tr');row.append(element('td',`${objectName(o.type)} (${o.type}) · ${o.state}`),element('td',`${n(o.pose?.x)} / ${n(o.pose?.y)}`),element('td',signalName(o.tlSignal)||'—'));table.append(row);});
+  container.append(table,element('p','Оси и единицы локальных координат не подтверждены. На схеме условно x — поперёк, y — вперёд. Пунктир — состояние, отличное от TRACKED. Схема неподвижна и видна только в первые 3 секунды от времени снимка; движение объектов неизвестно.','small'),evidenceButton(id,'Исходная запись снимка'));scene.draw();return scene.snapshot;
+}
+async function openSnapshot(id){
+  $('#snapshot-select').value=String(id);const snapshot=await selectSnapshot();if(!snapshot||+$('#snapshot-select').value!==id)return;
+  $('#snapshot-details').open=true;scene.showSnapshot=true;$('#show-snapshot').checked=true;
+  $('#scene-zoom').value=.5;scene.zoom=.5;scene.camera.following=true;scene.onCameraChange();await navigateMoment(snapshot.t);scene.draw();
+}
 function stop(){playing=false;cancelAnimationFrame(frameId);$('#play').textContent='▶ Воспроизвести';}
 function play(){
   clearPreview();if(playing){stop();safe(fetchFrame)();saveView();return;}
@@ -223,7 +290,13 @@ function configureMap(){
   if(!routes.includes(state.mapRoute))state.mapRoute=state.route!=='all'?state.route:(routes.find(r=>r!=='0')||routes[0]);
   options($('#map-route'),routes.map(r=>[r,routeName(r)]),state.mapRoute);$('#map-route').disabled=routes.length<=1;
   $('#map-caption').textContent=`Вагон ${state.vehicle} · ${date(trip.start)}`;
-  map.setTrack(trip.track,trip.episodes,state.mapRoute);mapCluster=null;mapListLimit=30;renderMapEvents();
+  map.setTrack(trip.track,trip.episodes,state.mapRoute);map.setObservations(trip.snapshots);renderMapObservations();mapCluster=null;mapListLimit=30;renderMapEvents();
+}
+function renderMapObservations(items=map.observations){
+  const list=$('#map-observation-list');list.replaceChildren();
+  if(!items.length){list.append(element('p','На этом маршруте нет снимков с координатами наблюдения.','small muted'));return;}
+  for(const s of items){const b=element('button',`${time(s.t,true)} · ${s.subsystem==='TrafficLightSubSys'?'Светофоры':'Объект'} — открыть схему`);b.dataset.snapshotId=s.id;b.onclick=safe(async()=>{toggleMap(false);await openSnapshot(s.id);$('#scene').scrollIntoView({block:'center',behavior:'smooth'});});list.append(b);}
+  if(items!==map.observations){const all=element('button','Все снимки маршрута','text-button');all.onclick=()=>renderMapObservations();list.append(all);}
 }
 function renderMapEvents(){
   const all=mapCluster||map.eventPoints.map(p=>p.event),events=all.filter(e=>map.filter==='all'||e.type===map.filter),list=$('#map-event-list');
@@ -254,7 +327,10 @@ $$('[data-span]').forEach(b=>b.onclick=safe(()=>applyRange(Math.max(trip.start,s
 $('#cursor-slider').oninput=e=>{stop();clearPreview();state.time=+e.target.value;exact=null;renderCurrent();};$('#cursor-slider').onchange=safe(async()=>{await fetchFrame();saveView();});
 $('#play').onclick=play;$('#step-back').onclick=safe(()=>step(-1));$('#step-forward').onclick=safe(()=>step(1));$('#previous-event').onclick=safe(()=>nextEvent(-1));$('#next-event').onclick=safe(()=>nextEvent(1));
 for(const mode of ['2d','3d'])$('#view-'+mode).onclick=()=>{state.mode=mode;renderMode();saveView();};
-$('#camera-angle').oninput=renderMode;$('#scene-zoom').oninput=renderMode;$('#reset-camera').onclick=()=>{$('#camera-angle').value=220;$('#scene-zoom').value=1.25;renderMode();};
+$('#camera-angle').oninput=renderMode;$('#camera-pitch').oninput=renderMode;$('#scene-zoom').oninput=renderMode;$('#reset-camera').onclick=()=>scene.camera.reset();
+$('#show-ground').onchange=e=>{scene.showGround=e.target.checked;scene.draw();};$('#ground-opacity').oninput=e=>{scene.groundOpacity=+e.target.value;scene.draw();};
+$('#ground-style').onchange=e=>{scene.groundStyle=e.target.value;localStorage.setItem('sirius-ground-style',scene.groundStyle);scene.draw();};
+$('#allow-satellite').onclick=()=>{localStorage.setItem('sirius-esri-consent','tiles-v1');scene.satellite.authorized=true;groundStatusKey='';scene.draw();};
 function toggleMap(value){
   if(value)mapFocus=document.activeElement;state.map=value;renderMode();saveView();
   if(!value&&mapFocus?.isConnected)mapFocus.focus();
@@ -262,6 +338,7 @@ function toggleMap(value){
 $('#map-toggle').onclick=()=>toggleMap(!state.map);$('#map-fab').onclick=()=>toggleMap(true);$('#map-close').onclick=()=>toggleMap(false);$('#map-backdrop').onclick=()=>toggleMap(false);
 $('#map-plus').onclick=()=>map.zoom(1.5);$('#map-minus').onclick=()=>map.zoom(1/1.5);$('#map-fit').onclick=()=>map.fit();
 $('#map-route').onchange=()=>{state.mapRoute=$('#map-route').value;configureMap();saveView();};
+$('#map-observations').onchange=e=>{map.showObservations=e.target.checked;$('#map-observation-panel').hidden=!e.target.checked;renderMapObservations();map.invalidate();};
 $$('[data-map-filter]').forEach(b=>b.onclick=()=>{map.setFilter(b.dataset.mapFilter);mapListLimit=30;$$('[data-map-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderMapEvents();});
 $('#map-all-events').onclick=()=>{mapCluster=null;mapListLimit=30;renderMapEvents();};$('#map-more-events').onclick=()=>{mapListLimit+=30;renderMapEvents();};
 $('#map-set-start').onclick=safe(async()=>{const p=passes[+$('#map-pass').value];if(!p)return;const span=state.end-state.start,start=p.record.t;state.time=start;await applyRange(start,Math.min(trip.end,start+span));await seek(start);notice('Начало интервала выбрано на карте.');});
@@ -270,8 +347,8 @@ $('#next-observation').onclick=safe(async()=>{const next=motion.next(state.time)
 $('#map-panel').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();toggleMap(false);}if(e.key==='Tab'){const items=[...$('#map-panel').querySelectorAll('button,select,a')].filter(x=>!x.disabled&&!x.hidden&&x.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing){stop();saveView();}});
 $('#analyze-button').onclick=safe(doAnalyze);$$('[data-question]').forEach(b=>b.onclick=safe(()=>ask(b.dataset.question)));$('#question-form').onsubmit=e=>{e.preventDefault();safe(()=>ask($('#question-input').value))();};
-$('#raw-details').ontoggle=()=>{if($('#raw-details').open&&currentRow())safe(()=>showRaw(currentRow().id))();};$('#snapshot-select').onchange=safe(selectSnapshot);$('#go-snapshot').onclick=safe(async()=>{const id=+$('#snapshot-select').value;if(!id){notice('Сначала выберите снимок.');return;}await selectSnapshot();await evidence(id);const stamp=scene.snapshot.t;if(stamp<state.start||stamp>state.end)await applyRange(Math.max(trip.start,stamp-15000),Math.min(trip.end,stamp+15000));await seek(stamp);});$('#show-snapshot').onchange=e=>{scene.showSnapshot=e.target.checked;scene.draw();};
+$('#raw-details').ontoggle=()=>{if($('#raw-details').open&&currentRow())safe(()=>showRaw(currentRow().id))();};$('#snapshot-select').onchange=safe(selectSnapshot);$('#go-snapshot').onclick=safe(async()=>{const id=+$('#snapshot-select').value;if(!id){notice('Сначала выберите снимок.');return;}await openSnapshot(id);});$('#show-snapshot').onchange=e=>{scene.showSnapshot=e.target.checked;scene.draw();};
 $('#export-analysis').onclick=()=>{if(!analysis)return;const file=new Blob([JSON.stringify(analysis,null,2)],{type:'application/json'}),a=element('a');a.href=URL.createObjectURL(file);a.download=`sirius-${analysis.vehicle}-${analysis.id.slice(0,8)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 $('#theme-button').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');new ResizeObserver(redraw).observe(document.querySelector('main'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.map){e.preventDefault();toggleMap(false);return;}if($('#work-view').hidden||state.map||e.target.id==='overview'||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;if(e.code==='Space'){e.preventDefault();play();}if(e.code==='ArrowRight'){e.preventDefault();safe(()=>step(1))();}if(e.code==='ArrowLeft'){e.preventDefault();safe(()=>step(-1))();}});
-safe(boot)();
+safe(async()=>{await loadSettings();await boot();})();

@@ -20,9 +20,10 @@ export class CityMap{
   constructor(canvas,onPick,onError,onEvents){
     Object.assign(this,{canvas,onPick,onError,onEvents,center:[30.32,59.96],scale:.08,features:[],track:[],episodes:[],eventPoints:[],clusters:[],time:0,start:0,end:0,request:0,ready:false,active:false,filter:'all',selected:null});
     this.base=document.createElement('canvas');this.dirty=true;let drag=null;
+    this.observations=[];this.observationClusters=[];this.showObservations=false;
     canvas.addEventListener('pointerdown',e=>{drag={x:e.offsetX,y:e.offsetY,center:[...this.center],moved:false};canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';});
     canvas.addEventListener('pointermove',e=>{
-      if(!drag){canvas.style.cursor=this.clusters.some(c=>Math.hypot(c.x-e.offsetX,c.y-e.offsetY)<c.radius+5)?'pointer':'grab';return;}
+      if(!drag){canvas.style.cursor=[...this.clusters,...this.observationClusters].some(c=>Math.hypot(c.x-e.offsetX,c.y-e.offsetY)<c.radius+5)?'pointer':'grab';return;}
       const dx=e.offsetX-drag.x,dy=e.offsetY-drag.y;
       if(Math.hypot(dx,dy)>5)drag.moved=true;
       if(drag.moved){this.fitted=false;this.center=[drag.center[0]-dx/this.scale/METERS_LON,drag.center[1]+dy/this.scale/METERS_LAT];this.invalidate();}
@@ -67,8 +68,11 @@ export class CityMap{
   update(time,start,end){if(start!==this.start||end!==this.end)this.dirty=true;Object.assign(this,{time,start,end});this.draw();}
   setFilter(filter){this.filter=filter;this.invalidate();}
   select(event){this.selected=event.id;this.invalidate();}
+  setObservations(items){this.observations=items.filter(s=>s.routes.includes(this.route)&&Number.isFinite(s.lat)&&Number.isFinite(s.lon)&&s.lat>59.4&&s.lat<60.5&&s.lon>29&&s.lon<31.5);this.invalidate();}
   invalidate(){this.dirty=true;this.draw();}
   pick(x,y){
+    const observation=this.observationClusters.find(c=>Math.hypot(c.x-x,c.y-y)<c.radius+5);
+    if(observation){this.onObservations?.(observation.items);return;}
     const cluster=this.clusters.reduce((best,c)=>Math.hypot(c.x-x,c.y-y)<=c.radius+6&&(!best||Math.hypot(c.x-x,c.y-y)<Math.hypot(best.x-x,best.y-y))?c:best,null);
     if(cluster){this.onEvents?.(cluster.events);return;}
     let nearest=null,best=Infinity;
@@ -107,6 +111,16 @@ export class CityMap{
       const n=a.events.length,m=b.events.length;a.x=(a.x*n+b.x*m)/(n+m);a.y=(a.y*n+b.y*m)/(n+m);a.events.push(...b.events);a.radius=13;this.clusters.splice(j,1);j=i;
     }
     for(const c of this.clusters){const chosen=c.events.some(e=>e.id===this.selected),mixed=new Set(c.events.map(e=>e.type)).size>1;ctx.beginPath();ctx.arc(c.x,c.y,c.radius+(chosen?4:0),0,Math.PI*2);ctx.fillStyle=color('--panel');ctx.fill();ctx.beginPath();ctx.arc(c.x,c.y,c.radius,0,Math.PI*2);ctx.fillStyle=mixed?color('--accent'):eventColor(c.events[0]);ctx.fill();if(chosen){ctx.strokeStyle=color('--text');ctx.lineWidth=2;ctx.stroke();}if(c.events.length>1){ctx.fillStyle=color('--on-dark');if(document.documentElement.dataset.theme==='dark')ctx.fillStyle='#152b3c';ctx.font='600 10px Segoe UI';ctx.textAlign='center';ctx.fillText(c.events.length>99?'99+':String(c.events.length),c.x,c.y+3.5);ctx.textAlign='left';}}
+    this.observationClusters=[];
+    if(this.showObservations)for(const item of this.observations){
+      const [x,y]=this.project(item.lon,item.lat);if(x<-20||x>w+20||y<-20||y>h+20)continue;
+      const c=this.observationClusters.find(c=>Math.hypot(c.x-x,c.y-y)<28);
+      if(c)c.items.push(item);else this.observationClusters.push({x,y,radius:11,items:[item]});
+    }
+    for(const c of this.observationClusters){
+      ctx.beginPath();ctx.moveTo(c.x,c.y-12);ctx.lineTo(c.x+12,c.y);ctx.lineTo(c.x,c.y+12);ctx.lineTo(c.x-12,c.y);ctx.closePath();ctx.fillStyle=color('--panel');ctx.fill();ctx.strokeStyle=color('--accent');ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=color('--accent');ctx.font='bold 10px Segoe UI';ctx.textAlign='center';ctx.fillText(c.items.length>1?String(c.items.length):'◉',c.x,c.y+3);ctx.textAlign='left';
+    }
     ctx.font='11px Segoe UI';ctx.fillStyle=color('--muted');ctx.fillText('Север ↑',12,20);const meters=this.scale>1?25:this.scale>.2?100:this.scale>.04?500:1000;
     ctx.strokeStyle=color('--text');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(12,h-24);ctx.lineTo(12+meters*this.scale,h-24);ctx.stroke();ctx.fillText(meters>=1000?meters/1000+' км':meters+' м',12,h-8);
     this.dirty=false;this.theme=document.documentElement.dataset.theme;
@@ -117,5 +131,6 @@ export class CityMap{
     ctx.drawImage(this.base,0,0,w,h);const p=this.model?.at(this.time);
     if(p){const [x,y]=this.project(p.lon,p.lat);ctx.fillStyle=color('--panel');ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fill();ctx.fillStyle=color('--accent');ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(x+p.tx*17,y-p.ty*17);ctx.lineTo(x-p.ty*5,y-p.tx*5);ctx.lineTo(x+p.ty*5,y+p.tx*5);ctx.closePath();ctx.fill();}
     this.canvas.dataset.route=this.route;this.canvas.dataset.eventCount=String(this.eventPoints.length);
+    this.canvas.dataset.observationCount=String(this.showObservations?this.observations.length:0);
   }
 }
