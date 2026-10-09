@@ -19,7 +19,8 @@ export class SignalChart{
     canvas.addEventListener('keydown',e=>{if(!this.range)return;const step=(this.range.to-this.range.from)/200;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();this.callbacks.commit(Math.max(this.range.from,Math.min(this.range.to,this.time+(e.key==='ArrowRight'?step:-step))));}});
     new ResizeObserver(()=>{this.dirty=true;this.draw();}).observe(canvas);
   }
-  setData(rows,range,events,gaps){this.rows=rows;this.range=range;this.events=events||[];this.gaps=gaps||[];this.dirty=true;this.draw();}
+  setData(rows,range,events,gaps,sampled=false){this.rows=rows;this.range=range;this.events=events||[];this.gaps=gaps||[];this.sampled=sampled;this.hover=null;this.dirty=true;this.draw();}
+  continuous(a,b){return a&&b&&a.family===b.family&&a.route===b.route&&b.t-a.t<=5000&&!this.gaps.some(([x,y])=>a.t<y&&b.t>x);}
   update(t){this.time=t;this.draw();}
   timeAt(x){if(!this.range)return null;const w=this.canvas.clientWidth;if(x<LEFT||x>w-RIGHT)return null;return Math.round(this.range.from+(x-LEFT)/(w-LEFT-RIGHT)*(this.range.to-this.range.from));}
   point(x){const t=this.timeAt(x);this.hover=t===null?null:t;if(t!==null)this.callbacks.preview?.(t);this.draw();}
@@ -39,12 +40,12 @@ export class SignalChart{
     label('Скорость, км/ч',s.top+8,true);
     for(const v of[0,vmax/2,vmax]){ctx.strokeStyle=color('--grid');ctx.beginPath();ctx.moveTo(L,ys(v));ctx.lineTo(R,ys(v));ctx.stroke();ctx.fillStyle=color('--muted');ctx.textAlign='right';ctx.fillText(String(v),L-6,ys(v));}
     const line=(get,y,style,width=1.8,dash=[],step=false)=>{ctx.save();ctx.beginPath();ctx.rect(L,0,R-L,h);ctx.clip();ctx.strokeStyle=style;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();let prev=null;
-      for(const r of rows){const v=get(r);if(v==null||!Number.isFinite(v)){prev=null;continue;}const px=x(r.t),py=y(v);if(!prev||this.gaps.some(([a,b])=>prev.t<=a&&r.t>=b))ctx.moveTo(px,py);else if(step){ctx.lineTo(px,y(get(prev)));ctx.lineTo(px,py);}else ctx.lineTo(px,py);prev=r;}
+      for(const r of rows){const v=get(r);if(v==null||!Number.isFinite(v)){prev=null;continue;}const px=x(r.t),py=y(v);if(!this.continuous(prev,r))ctx.moveTo(px,py);else if(step){ctx.lineTo(px,y(get(prev)));ctx.lineTo(px,py);}else ctx.lineTo(px,py);prev=r;}
       ctx.stroke();ctx.restore();};
     line(r=>r.goal,ys,color('--muted'),1.3,[5,4],true);
     line(r=>r.speed!=null&&r.speed<=150?r.speed:null,ys,color('--accent'),2);
     // control
-    const c=lay.control,yc=v=>(c.top+c.bottom)/2-v/15*(c.bottom-c.top)/2;
+    const c=lay.control,controlMax=Math.max(15,...rows.flatMap(r=>[Math.abs(r.mode||0),Math.abs(r.driver_mode||0)])),yc=v=>(c.top+c.bottom)/2-v/controlMax*(c.bottom-c.top)/2;
     label('Рукоятка',(c.top+c.bottom)/2,true);ctx.fillStyle=color('--muted');ctx.textAlign='right';ctx.fillText('тяга',L-6,c.top+6);ctx.fillText('торм.',L-6,c.bottom-6);
     ctx.strokeStyle=color('--grid');ctx.beginPath();ctx.moveTo(L,yc(0));ctx.lineTo(R,yc(0));ctx.stroke();
     line(r=>r.driver_mode,yc,color('--muted'),1.4,[2,3],true);
@@ -53,25 +54,26 @@ export class SignalChart{
     const wv=lay.warn;let wmax=10;for(const r of rows)if(r.warn!=null)wmax=Math.max(wmax,r.warn);
     label('Уровень предупр.',(wv.top+wv.bottom)/2,true);
     ctx.save();ctx.beginPath();ctx.rect(L,0,R-L,h);ctx.clip();ctx.fillStyle=color('--warn');
-    for(let i=0;i<rows.length-1;i++){const r=rows[i];if(!r.warn)continue;const hh=r.warn/wmax*(wv.bottom-wv.top);ctx.globalAlpha=.75;ctx.fillRect(x(r.t),wv.bottom-hh,Math.max(1,x(rows[i+1].t)-x(r.t)),hh);}
+    for(let i=0;i<rows.length;i++){const r=rows[i];if(!r.warn)continue;const hh=Math.max(0,r.warn)/wmax*(wv.bottom-wv.top);ctx.globalAlpha=.75;const width=!this.sampled&&this.continuous(r,rows[i+1])?Math.max(1,x(rows[i+1].t)-x(r.t)):1.5;ctx.fillRect(x(r.t),wv.bottom-hh,width,hh);}
     ctx.globalAlpha=1;ctx.restore();ctx.strokeStyle=color('--grid');ctx.beginPath();ctx.moveTo(L,wv.bottom+.5);ctx.lineTo(R,wv.bottom+.5);ctx.stroke();
     // bands
     BANDS.forEach(([name,get],i)=>{const y0=lay.bands.top+i*lay.bands.row;label(name,y0+7);ctx.fillStyle=color('--bg');ctx.fillRect(L,y0+1,R-L,lay.bands.row-4);
-      for(let j=0;j<rows.length-1;j++){const v=get(rows[j]);if(!v||v==='No'||String(v).startsWith('CSV:'))continue;
-        ctx.fillStyle=color(v==='WarningAct'?'--warn':v==='cpilot'?'--purple':v==='unknown'?'--muted':'--brake');ctx.fillRect(x(rows[j].t),y0+1,Math.max(1.5,x(rows[j+1].t)-x(rows[j].t)),lay.bands.row-4);}});
+      for(let j=0;j<rows.length;j++){const v=get(rows[j]);if(!['WarningAct','ActuationAct','Brake','cpilot','unknown'].includes(v))continue;
+        const width=!this.sampled&&this.continuous(rows[j],rows[j+1])?Math.max(1.5,x(rows[j+1].t)-x(rows[j].t)):1.5;
+        ctx.fillStyle=color(v==='WarningAct'?'--warn':v==='cpilot'?'--purple':v==='unknown'?'--muted':'--brake');ctx.fillRect(x(rows[j].t),y0+1,width,lay.bands.row-4);}});
     // time axis
     ctx.fillStyle=color('--muted');const axisY=lay.bands.top+BANDS.length*lay.bands.row+10;
     const ticks=w<600?2:4;for(let i=0;i<=ticks;i++){const t=from+(to-from)*i/ticks;ctx.textAlign=i===0?'left':i===ticks?'right':'center';ctx.fillText(clock(t),x(t),axisY);}
     this.dirty=false;this.theme=document.documentElement.dataset.theme;
   }
   draw(){
-    if(!this.range)return;const s=surface(this.canvas);if(!s)return;const {ctx,w,h}=s;
-    if(this.dirty||this.base.width!==this.canvas.width||this.theme!==document.documentElement.dataset.theme)this.build(s);
+    if(!this.range||!this.canvas.getClientRects().length)return;const s=surface(this.canvas);if(!s)return;const {ctx,w,h}=s;
+    if(this.dirty||this.base.width!==this.canvas.width||this.base.height!==this.canvas.height||this.theme!==document.documentElement.dataset.theme)this.build(s);
     ctx.drawImage(this.base,0,0,w,h);const {from,to}=this.range,x=t=>LEFT+(t-from)/Math.max(1,to-from)*(w-LEFT-RIGHT);
     if(this.time>=from&&this.time<=to){ctx.strokeStyle=color('--text');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x(this.time),4);ctx.lineTo(x(this.time),h-18);ctx.stroke();}
     if(this.hover!==null){
       const px=x(this.hover),i=lowerBound(this.rows,this.hover+1)-1,r=this.rows[i];ctx.strokeStyle=color('--accent');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px,4);ctx.lineTo(px,h-18);ctx.stroke();ctx.setLineDash([]);
-      if(r){const text=`${clock(this.hover,true)} · ${num(r.speed)} км/ч · цель ${num(r.goal,0)} · рукоятка ${num(r.mode,0)}/${num(r.driver_mode,0)}`;ctx.font='600 11px Inter, Segoe UI, sans-serif';const tw=ctx.measureText(text).width+14,left=Math.max(LEFT,Math.min(w-tw-6,px+8));ctx.fillStyle=color('--dark');ctx.fillRect(left,6,tw,22);ctx.fillStyle=color('--on-dark');ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(text,left+7,17);}
+      if(r){const missing=this.hover-r.t>5000||this.gaps.some(([a,b])=>this.hover>a&&this.hover<b);const text=missing?`${clock(this.hover,true)} · нет наблюдений`:`${clock(r.t,true)} · ${num(r.speed)} км/ч`;ctx.font='600 11px Inter, Segoe UI, sans-serif';const tw=Math.min(w-LEFT-8,ctx.measureText(text).width+14),left=Math.max(LEFT,Math.min(w-tw-6,px+8));ctx.fillStyle=color('--dark');ctx.fillRect(left,6,tw,22);ctx.fillStyle=color('--on-dark');ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(text,left+7,17,tw-14);}
     }
   }
 }
@@ -91,7 +93,7 @@ export function renderSystemState(container,frame,{gap}={}){
   for(const m of s.modules){const st=STATUS[m.status]||[m.status||'нет данных','muted'],act=ACT[m.act]||[m.act||'—','muted'];
     const name=el('span',m.label,'module-name');name.title=`FSM: ${m.fsm||'—'} · запрос включения: ${m.request||'—'}`;modules.append(name,pill(...st),pill(...act));}
   const brakes=el('div',undefined,'brake-row');
-  for(const[k,label]of[['mechanical','Механический'],['rail','Рельсовый'],['emergency','Экстренный'],['crash','Аварийный']]){const v=s.brakes[k];brakes.append(pill(label,v?'bad':v===false?'off':'muted'));}
+  for(const[k,label]of[['mechanical','Механический'],['rail','Рельсовый'],['emergency','Экстренный'],['crash','Аварийный']]){const v=s.brakes[k],item=pill(label+(v==null?' · ?':''),v?'bad':v===false?'off':'muted');item.title=v?'Положительный сигнал обратной связи':v===false?'Отрицательный сигнал обратной связи':'Нет данных об обратной связи';brakes.append(item);}
   const facts=el('dl',undefined,'state-facts');
   const add=(k,v)=>facts.append(el('dt',k),el('dd',v));
   add('Требуемая скорость',s.goal_speed==null?'—':num(s.goal_speed,0)+' км/ч');
@@ -110,15 +112,19 @@ export function renderSystemState(container,frame,{gap}={}){
 }
 
 /* Four-part episode card. Each statement is a button that moves the shared cursor to its record. */
-const SECTIONS=[['circumstances','Обстоятельства и известная причина'],['reaction','Зарегистрированная реакция системы'],['result','Наблюдаемый результат'],['limits','Ограничения анализа']];
+const SECTIONS=[['circumstances','Что зарегистрировано'],['reaction','Реакция системы'],['result','Результат'],['limits','Ограничения']];
 export function renderEpisodeCard(container,lines,onEvidence){
   container.replaceChildren();
   for(const[key,title]of SECTIONS){
     const section=el('section',undefined,'card-section '+key),list=el('ol');section.append(el('h3',title),list);
     const items=lines.filter(l=>l.section===key).sort((a,b)=>(a.t??Infinity)-(b.t??Infinity));
+    const preferred={circumstances:['cause','state'],reaction:['intervention','brake_event','warning'],result:['stop','min_speed','unknown','speed_after'],limits:['limit','components']}[key];
+    const visible=[...items].sort((a,b)=>{const rank=l=>preferred.includes(l.kind)?preferred.indexOf(l.kind):99;return rank(a)-rank(b);}).slice(0,2);
+    const details=el('details'),more=el('ol');details.append(el('summary','Подробнее'),more);
     for(const l of items){const li=el('li',undefined,l.kind==='cause'?'cause':'');
       if(l.t!=null&&l.evidence_ids.length){const b=el('button',clock(l.t,true),'time-link');b.type='button';b.title='Перейти к исходной записи';b.dataset.evidenceId=l.evidence_ids[0];b.onclick=()=>onEvidence(l.evidence_ids[0]);li.append(b);}
-      const text=l.t!=null?l.text.replace(/^В \d\d:\d\d:\d\d(\.\d+)?\s*/,''):l.text;li.append(el('span',text.charAt(0).toUpperCase()+text.slice(1)));list.append(li);}
+      const text=l.t!=null?l.text.replace(/^В \d\d:\d\d:\d\d(\.\d+)?\s*/,''):l.text;li.append(el('span',text.charAt(0).toUpperCase()+text.slice(1)));(visible.includes(l)?list:more).append(li);}
+    if(more.children.length)section.append(details);
     if(!items.length)list.append(el('li','Нет подтверждённых утверждений.','muted'));
     container.append(section);
   }
@@ -130,7 +136,7 @@ export const targetName=t=>TARGET[t]||t||'Цель не указана';
 export function episodeRow(e,{selected,onOpen,extra}){
   const b=el('button',undefined,'episode-row');b.type='button';b.dataset.episodeId=e.id;b.setAttribute('aria-pressed',!!selected);
   const dot=el('i',undefined,'dot '+(e.type==='Brake'?'brake':e.type==='Warn'?'warn':'overspeed'));
-  const body=el('span',undefined,'episode-body'),head=el('span',undefined,'episode-head');head.append(el('strong',eventName(e)),el('time',clock(e.start)));body.append(head,el('small',targetName(e.target)+` · ${e.n} зап.`+(e.end>e.start?` · ${num((e.end-e.start)/1000,1)} с`:'')));
+  const body=el('span',undefined,'episode-body'),head=el('span',undefined,'episode-head');head.append(el('strong',eventName(e)),el('time',clock(e.start)));body.append(head,el('small',targetName(e.target)));b.title=`${e.n} записей · ${num((e.end-e.start)/1000,1)} с`;
   if(e.snapshot_links?.length)body.append(el('small','есть снимок распознавания','snapshot-tag'));
   b.append(dot,body);if(extra)b.append(extra);b.onclick=onOpen;return b;
 }

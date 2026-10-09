@@ -3,7 +3,7 @@ import sqlite3, json, zlib, os
 
 ROOT = Path(__file__).resolve().parents[1]
 # SIRIUS_DATA lets a demo or test database live apart from the real archive.
-DATA = Path(os.environ.get('SIRIUS_DATA') or ROOT / 'data').resolve()
+DATA = (ROOT / Path(os.environ.get('SIRIUS_DATA') or 'data')).resolve()
 DB = DATA / 'sirius.sqlite3'
 VERSION = 'sirius-mvp-1'
 

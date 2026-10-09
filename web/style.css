@@ -119,3 +119,31 @@ main:has(#work-view:not([hidden])){max-width:1760px}
 @media(max-width:900px){.workspace-layout.dashboard{grid-template-columns:1fr}.episode-rail{position:static;max-height:340px}.right-column{grid-template-columns:1fr}.episode-card{grid-template-columns:1fr}#signals{height:368px}}
 
 #work-view .work-heading{margin-bottom:14px}#work-view .work-heading h1{font-size:23px;margin:2px 0}
+
+/* Keep the reconstruction primary; detail is available without crowding the workspace. */
+.home-intro{padding-top:12px}.home-intro h1{font-size:38px;line-height:1.2}
+.vehicle-cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:0 0 24px}
+.vehicle-card{display:grid;gap:6px;text-align:left;padding:16px;border-radius:12px}
+.vehicle-card strong{font-size:16px}.vehicle-card small{color:var(--muted);font-size:12px}
+.vehicle-card[aria-pressed=true]{border-color:var(--accent);background:var(--soft);box-shadow:inset 0 -3px var(--accent)}
+.episode-search>summary,.signals-panel>summary,#system-details>summary,#questions-details>summary{cursor:pointer;font-weight:600;font-size:14px}
+.episode-search[open]>summary,.signals-panel[open]>summary,#system-details[open]>summary,#questions-details[open]>summary{margin-bottom:16px}
+.home-episodes{grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr))}
+#home-more,#episode-more{margin-top:12px}
+.workspace-layout.dashboard{grid-template-columns:280px minmax(0,1fr)}
+.right-column{position:static;grid-column:auto;grid-template-columns:1fr}
+.dashboard #scene{height:clamp(360px,49vh,560px)}
+.state-panel .scene-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:10px}
+.state-panel .scene-metrics strong{font-size:16px}
+.state-panel .quality-note:empty{display:none}
+#system-details{border-top:1px solid var(--border);padding-top:12px}
+.system-state{max-width:720px}.module-table{grid-template-columns:minmax(0,1fr) auto auto}
+.episode-card{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card-section{padding:18px}.card-section h3{font-size:15px}.card-section ol{gap:12px}
+.card-section details{margin-top:12px}.card-section details summary{font-size:12px;color:var(--accent);cursor:pointer}
+.card-section details[open] summary{margin-bottom:12px}
+.episode-body{min-width:0}.episode-row .episode-head{flex-wrap:wrap;gap:2px 8px}
+.analysis-panel> .section-heading .eyebrow{display:none}
+.analysis-narrative:empty{display:none}
+@media(max-width:1100px){.vehicle-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-layout.dashboard{grid-template-columns:240px minmax(0,1fr)}.state-panel .scene-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.workspace-layout.dashboard{grid-template-columns:1fr}.episode-rail{position:static;max-height:280px}.episode-list{min-height:70px}.episode-card{grid-template-columns:1fr}.home-intro h1{font-size:30px}.dashboard #scene{height:360px}.vehicle-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.vehicle-card{padding:12px}.module-table{font-size:11px;gap:6px 4px}.module-table .pill{font-size:10px;padding:2px 4px}.state-facts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.state-panel .scene-metrics strong{font-size:14px}}

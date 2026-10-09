@@ -235,6 +235,14 @@ if __name__=='__main__':
     if DATA.resolve()==(ROOT/'data').resolve():raise SystemExit('Демо-данные не записываются в каталог реального архива data/. Укажите SIRIUS_DATA.')
     if DB.exists() and '--force' not in sys.argv:
         print(f'{DB} уже существует. Повторите с --force, чтобы пересоздать демо-базу.');sys.exit(1)
+    if DB.exists():
+        import sqlite3
+        try:
+            with sqlite3.connect(DB.as_uri()+'?mode=ro',uri=True) as con:
+                marker=con.execute("SELECT value FROM metadata WHERE key='demo'").fetchone()
+            con.close()
+        except sqlite3.Error:marker=None
+        if not marker or marker[0]!='true':raise SystemExit('Отказ: существующая база не помечена как демо. Выберите пустой каталог SIRIUS_DATA.')
     for p in (DB,DB.with_name(DB.name+'-wal'),DB.with_name(DB.name+'-shm'),DATA/'import-progress.json'):
         if p.exists():p.unlink()
     inventory=build();ingest.run(inventory)

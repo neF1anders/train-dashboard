@@ -12,7 +12,7 @@ const time=t=>new Date(t+10800000).toISOString().slice(11,23);
     assert((await page.locator('#event-context').innerText()).includes('Автомобиль'));
     assert((await page.locator('#event-context').innerText()).includes('0,209 с до'));
     await page.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='ready');
-    const ground=await page.locator('#scene').evaluate(c=>c.toDataURL());await page.uncheck('#show-ground');
+    await page.locator('.view-settings').evaluate(e=>e.open=true);const ground=await page.locator('#scene').evaluate(c=>c.toDataURL());await page.uncheck('#show-ground');
     assert.equal(await page.locator('#scene').getAttribute('data-ground'),'off');
     assert.notEqual(ground,await page.locator('#scene').evaluate(c=>c.toDataURL()));await page.check('#show-ground');
     await page.locator('#event-context [data-snapshot-id]').click();

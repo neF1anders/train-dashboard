@@ -41,7 +41,7 @@ print(json.dumps(out,ensure_ascii=False))
     def test_reaction_and_stop(self):
         kinds={l['kind'] for l in self.result['card']}
         self.assertTrue({'warning','intervention','brake_event','stop'}<=kinds)
-        self.assertIn('на моменте',self.result['narrative'].lower())
+        self.assertIn(' — ',self.result['narrative'])
     def test_brake_question_lists_feedback(self):
         self.assertIn('тормоз',self.result['brakes_answer']['text'])
         self.assertTrue(self.result['brakes_answer']['evidence_ids'])

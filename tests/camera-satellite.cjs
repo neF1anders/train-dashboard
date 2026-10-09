@@ -13,6 +13,7 @@ const URL='http://127.0.0.1:5173/#work?vehicle=7752&day=2026-09-15&route=10&star
   const camera=async()=>JSON.parse(await page.locator('#scene').getAttribute('data-camera'));
   try{
     await page.goto(URL);await page.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='ready',{},{timeout:45000});
+    await page.locator('.view-settings').evaluate(e=>e.open=true);
     if(!live){
       await page.selectOption('#ground-style','satellite');await page.locator('#satellite-consent').waitFor({state:'visible'});assert.equal(tiles.length,0,'Satellite requests must wait for explicit permission');
       await page.click('#allow-satellite');await page.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='ready',{},{timeout:45000});
@@ -46,10 +47,10 @@ const URL='http://127.0.0.1:5173/#work?vehicle=7752&day=2026-09-15&route=10&star
     for(const width of [320,768,1440]){await page.setViewportSize({width,height:1050});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Horizontal overflow');}
     assert.equal(errors.length,0,errors.join('\n'));
     const offline=await browser.newPage();await offline.route('https://services.arcgisonline.com/**',route=>route.abort());await offline.route('**/api/settings?*',route=>route.fulfill({json:{imagery:{esri_allowed:false,default_style:'streets'}}}));await offline.goto(URL);
-    await offline.locator('#work-view').waitFor({state:'visible'});await offline.selectOption('#ground-style','satellite');await offline.click('#allow-satellite');
+    await offline.locator('#work-view').waitFor({state:'visible'});await offline.locator('.view-settings').evaluate(e=>e.open=true);await offline.selectOption('#ground-style','satellite');await offline.click('#allow-satellite');
     await offline.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='unavailable',{},{timeout:30000});
     assert((await offline.locator('#ground-status').innerText()).includes('план улиц'));
-    await offline.selectOption('#ground-style','streets');await offline.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='ready');await offline.close();
+    await offline.locator('.view-settings').evaluate(e=>e.open=true);await offline.selectOption('#ground-style','streets');await offline.waitForFunction(()=>document.querySelector('#scene').dataset.ground==='ready');await offline.close();
     console.log(JSON.stringify({imageryMode:live?'live':'local fixture',tiles:tiles.length,permissionGate:true,orbit:true,pan:true,cursorZoom:true,keyboard:true,reset:true,topView:true,projection:math,offlineFallback:true,pageErrors:errors}));
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

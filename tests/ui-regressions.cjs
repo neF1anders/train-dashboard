@@ -44,7 +44,7 @@ const ms=t=>new Date(t+10800000).toISOString().slice(11,23);
   await page.waitForFunction(t=>document.querySelector('#cursor-time').textContent===t,ms(chosen.start));
   await page.screenshot({path:'tmp/revised-map.png'});
   await page.keyboard.press('Escape');await page.locator('#map-panel').waitFor({state:'hidden'});
-  await page.fill('#range-start','2026-09-14T05:08:49.389');await page.fill('#range-end','2026-09-14T05:09:24.68');await page.click('#apply-range');
+  await page.locator('.range-details').evaluate(e=>e.open=true);await page.fill('#range-start','2026-09-14T05:08:49.389');await page.fill('#range-end','2026-09-14T05:09:24.68');await page.click('#apply-range');
   await page.locator('#cursor-slider').evaluate((e,t)=>{e.value=t;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));},start);
   await page.waitForTimeout(250);
   await page.evaluate(async()=>{

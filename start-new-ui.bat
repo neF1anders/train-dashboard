@@ -1,6 +1,5 @@
 @echo off
 cd /d "%~dp0"
-for /f "tokens=5" %%p in ('netstat -ano ^| findstr LISTENING ^| findstr :5173') do taskkill /PID %%p /F >nul 2>&1
-echo Sirius: http://localhost:5173
-start "" http://localhost:5173
-python -m app.server --port 5173
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\start-local.ps1"
+if errorlevel 1 exit /b 1
+start "" http://localhost:5173/

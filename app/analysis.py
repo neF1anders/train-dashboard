@@ -56,7 +56,7 @@ def analyze(con,vehicle,start,end,route):
     summary=' '.join(f['text'] for f in facts if f['kind'] in ('speed','intervention','brake'))
     if not summary:summary='Доступны наблюдения, но данных для подтверждённого вывода о вмешательстве недостаточно.'
     return {'id':uuid.uuid4().hex,'created':datetime.now(timezone.utc).isoformat(),'vehicle':vehicle,'start':start,'end':end,'route':route,
-            'rules_version':VERSION,'data_version':meta(con,'data_version'),'engine':'rules','summary':summary,
+            'rules_version':'sirius-rules-2','data_version':meta(con,'data_version'),'engine':'rules','summary':summary,
             'facts':facts,'limitations':limits,'coverage_seconds':coverage,'records':len(rows),'gaps':gaps,'snapshot_ids':[r['id'] for r in rich],
             'speed_max':max((r['speed'] for r in measured),default=None),
             'narrative':episode['summary'],'card':episode['lines']}
