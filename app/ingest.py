@@ -2,6 +2,7 @@
 from .storage import ROOT,DATA,VERSION,init,connect
 from datetime import datetime,timezone,timedelta
 from collections import defaultdict
+from pathlib import Path
 import csv,hashlib,json,math,zlib,time
 
 TZ=timezone(timedelta(hours=3))
@@ -69,9 +70,9 @@ def normalize(r,family,source,seq,pointer):
 def progress(**values):
     path=DATA/'import-progress.json';tmp=path.with_suffix('.tmp');tmp.write_text(json.dumps(values,ensure_ascii=False),encoding='utf-8');tmp.replace(path)
 
-def run():
+def run(inventory_path=None):
     init();started=time.time()
-    inventory=json.loads((ROOT/'analysis/file-inventory.json').read_text(encoding='utf-8'))
+    inventory=json.loads(Path(inventory_path or ROOT/'analysis/file-inventory.json').read_text(encoding='utf-8'))
     groups=defaultdict(list)
     for f in inventory:groups[(f.get('payload_sha256') or f['sha256'], 'json' if f['path'].endswith('.jsonseq') else 'csv')].append(f)
     failed=0;skipped=0

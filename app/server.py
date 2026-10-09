@@ -7,7 +7,8 @@ from .storage import ROOT,DATA,VERSION,init,connect,meta,public,raw_record,PUBLI
 from .analysis import scope,analyze,answer
 from . import geo
 from .observations import snapshots,link_episodes
-import argparse,json,gzip,math,traceback,uuid,sqlite3
+from .episode import system_state,signal_row
+import argparse,json,gzip,math,traceback,uuid,sqlite3,os
 
 def thin(rows,limit=4000):
     if len(rows)<=limit:return rows
@@ -63,7 +64,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         url=urlparse(self.path)
         if not url.path.startswith('/api/'):
-            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/ground.js','/camera.js','/satellite.js','/motion.js','/timeline.js','/favicon.svg'):
+            if url.path not in ('/','/index.html','/app.js','/style.css','/map.js','/scene.js','/ground.js','/camera.js','/satellite.js','/motion.js','/timeline.js','/dashboard.js','/classic.html','/main.js','/main.css','/favicon.svg'):
                 self.send_error(404);return
             return super().do_GET()
         try:
@@ -89,7 +90,8 @@ class Handler(SimpleHTTPRequestHandler):
             settings_path=DATA/'local-settings.json'
             settings=json.loads(settings_path.read_text(encoding='utf-8')) if settings_path.exists() else {}
             allowed=settings.get('imagery',{}).get('esri_allowed') is True
-            return {'imagery':{'esri_allowed':allowed,'default_style':'satellite' if allowed else 'streets'}}
+            key=os.environ.get('YANDEX_MAPS_API_KEY') or settings.get('maps',{}).get('yandex_api_key') or ''
+            return {'imagery':{'esri_allowed':allowed,'default_style':'satellite' if allowed else 'streets'},'maps':{'yandex_api_key':key}}
         if path=='/api/health':
             progress_path=DATA/'import-progress.json'
             progress=json.loads(progress_path.read_text(encoding='utf-8')) if progress_path.exists() else {'status':'not_imported'}
@@ -105,8 +107,67 @@ class Handler(SimpleHTTPRequestHandler):
         with closing(connect()) as con:
             if path=='/api/catalog':
                 rows=[dict(r) for r in con.execute('SELECT * FROM catalog ORDER BY vehicle,day,CAST(route AS INTEGER)')]
-                coverage=json.loads((ROOT/'analysis/coverage-summary.json').read_text(encoding='utf-8'))
-                return {'entries':rows,'import':meta(con,'import'), 'coverage':coverage,'data_version':meta(con,'data_version')}
+                counts={}
+                for r in con.execute('SELECT vehicle,day,route,type,count(*) FROM episodes GROUP BY vehicle,day,route,type'):counts.setdefault((r[0],r[1],r[2]),{})[r[3]]=r[4]
+                for r in rows:r['episode_counts']=counts.get((r['vehicle'],r['day'],r['route']),{})
+                demo=meta(con,'demo',False)
+                coverage={'total_hours':sum(r['hours'] for r in rows),'vehicles':[]} if demo else json.loads((ROOT/'analysis/coverage-summary.json').read_text(encoding='utf-8'))
+                return {'entries':rows,'import':meta(con,'import'), 'coverage':coverage,'data_version':meta(con,'data_version'),'demo':bool(demo)}
+            if path=='/api/vehicles':
+                rows={}
+                for r in con.execute('SELECT vehicle,day,route,start,end,hours FROM catalog ORDER BY vehicle,day'):
+                    v=rows.setdefault(r['vehicle'],{'vehicle':r['vehicle'],'days':[],'routes':set(),'hours':0,'incidents':0,'first':r['start'],'last':r['end']})
+                    if r['day'] not in v['days']:v['days'].append(r['day'])
+                    v['routes'].add(r['route']);v['hours']+=r['hours'];v['first']=min(v['first'],r['start']);v['last']=max(v['last'],r['end'])
+                for r in con.execute("SELECT vehicle,day,count(*) FROM episodes GROUP BY vehicle,day"):
+                    if r[0] in rows:rows[r[0]]['incidents']+=r[2];rows[r[0]].setdefault('day_incidents',{})[r[1]]=r[2]
+                out=[]
+                for v in rows.values():v['routes']=sorted(v['routes'],key=lambda x:int(x) if x.isdigit() else 0);out.append(v)
+                return {'vehicles':out,'demo':bool(meta(con,'demo',False))}
+            if path=='/api/route':
+                vehicle=p['vehicle'];day=p['day'];datetime.strptime(day,'%Y-%m-%d')
+                raw=[public(r) for r in con.execute('SELECT '+PUBLIC_COLUMNS+" FROM records WHERE vehicle=? AND day=? AND type='Track' ORDER BY t,CASE family WHEN 'json' THEN 0 ELSE 1 END",(vehicle,day))]
+                track=[r for r in motion_track(raw) if r['lat'] is not None]
+                points=[{k:r[k] for k in ('id','t','lat','lon','speed','route','handle','brakes')} for r in thin(track,1500)]
+                eps=[dict(r) for r in con.execute('SELECT e.*,r.lat,r.lon,r.speed FROM episodes e JOIN records r ON r.id=e.evidence_id WHERE e.vehicle=? AND e.day=? ORDER BY e.start',(vehicle,day))]
+                # Warn → Brake → OverSpeed groups that overlap or follow within 10 s are one incident on the map.
+                incidents=[]
+                for e in eps:
+                    cur=incidents[-1] if incidents else None
+                    if cur and e['route']==cur['route'] and e['start']<=cur['end']+10000:
+                        cur['end']=max(cur['end'],e['end']);cur['groups'].append(e['id'])
+                        if e['type'] not in cur['types']:cur['types'].append(e['type'])
+                        if e['target'] and e['target'] not in cur['targets']:cur['targets'].append(e['target'])
+                        cur['records']+=e['n']
+                    else:incidents.append({'id':len(incidents)+1,'start':e['start'],'end':e['end'],'route':e['route'],'types':[e['type']],'targets':[e['target']] if e['target'] else [],
+                                           'lat':e['lat'],'lon':e['lon'],'speed':e['speed'],'records':e['n'],'groups':[e['id']]})
+                for i in incidents:
+                    if i['lat'] is None:
+                        near=min(track,key=lambda r:abs(r['t']-i['start']),default=None)
+                        if near and abs(near['t']-i['start'])<30000:i['lat'],i['lon']=near['lat'],near['lon']
+                    i['severity']='brake' if 'Brake' in i['types'] else 'overspeed' if 'OverSpeed' in i['types'] else 'warn'
+                bounds=con.execute('SELECT MIN(t),MAX(t) FROM records WHERE vehicle=? AND day=?',(vehicle,day)).fetchone()
+                return {'vehicle':vehicle,'day':day,'start':bounds[0],'end':bounds[1],'points':points,'gaps':gaps(track),'incidents':incidents}
+            if path=='/api/incident':
+                vehicle=p['vehicle'];start,end=int(float(p['start'])),int(float(p['end']));route=p.get('route','all')
+                if end<start or end-start>3600000:raise ValueError('Неверные границы инцидента')
+                result=analyze(con,vehicle,start-10000,end+10000,route)
+                speeds=[{'t':r['t'],'speed':r['speed']} for r in con.execute("SELECT t,speed FROM records WHERE vehicle=? AND t BETWEEN ? AND ? AND type='Track' AND speed IS NOT NULL ORDER BY t",(vehicle,start-30000,end+30000))]
+                return {**result,'speed_profile':speeds}
+            if path=='/api/episodes':
+                vehicle=p['vehicle'];day=p['day'];datetime.strptime(day,'%Y-%m-%d');route=p.get('route','all')
+                where='e.vehicle=? AND e.day=?';args=[vehicle,day]
+                if route!='all':where+=' AND e.route=?';args.append(route)
+                if p.get('type') in ('Brake','Warn','OverSpeed'):where+=' AND e.type=?';args.append(p['type'])
+                rows=[dict(r) for r in con.execute('SELECT e.*,r.speed,r.handle,r.act_danger,r.act_light,r.act_speed,r.brakes FROM episodes e JOIN records r ON r.id=e.evidence_id WHERE '+where+' ORDER BY e.start LIMIT 2000',args)]
+                return {'episodes':rows}
+            if path=='/api/signals':
+                vehicle,start,end,route=self.parse_scope(p);where,args=scope(vehicle,start,end,route)
+                rows=[dict(r) for r in con.execute('SELECT id,t,family,type,speed,goal,handle,brakes,act_danger,act_light,act_speed FROM records WHERE '+where+' ORDER BY t,id',args)]
+                picked=thin(rows,int(p.get('limit',1600)))
+                payloads={r[0]:r[1] for r in con.execute('SELECT id,payload FROM records WHERE id IN (%s)'%','.join('?'*len(picked)),[r['id'] for r in picked])} if picked else {}
+                import zlib
+                return {'rows':[signal_row(r,json.loads(zlib.decompress(payloads[r['id']]))) for r in picked],'count':len(rows),'start':start,'end':end}
             if path=='/api/history':return {'items':[{**dict(r),'state':json.loads(r['state'])} for r in con.execute('SELECT * FROM history ORDER BY updated DESC LIMIT 30')]}
             if path=='/api/trip':
                 vehicle=p['vehicle'];day=p['day'];datetime.strptime(day,'%Y-%m-%d');route=p.get('route','all')
@@ -139,7 +200,8 @@ class Handler(SimpleHTTPRequestHandler):
                 if route!='all':condition+=' AND route=?';args.append(route)
                 r=con.execute('SELECT '+PUBLIC_COLUMNS+' FROM records WHERE '+condition+" ORDER BY t DESC,CASE family WHEN 'json' THEN 0 ELSE 1 END LIMIT 1",args).fetchone()
                 if not r:return {'record':None}
-                return {'record':public(r),'age_ms':t-r['t']}
+                full=con.execute('SELECT payload FROM records WHERE id=?',(r['id'],)).fetchone()
+                return {'record':public(r),'age_ms':t-r['t'],'state':system_state(raw_record(full),r['family'])}
             if path=='/api/record':
                 r=con.execute('SELECT * FROM records WHERE id=?',(int(p['id']),)).fetchone()
                 if not r:raise ValueError('Запись не найдена')

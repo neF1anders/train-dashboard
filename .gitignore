@@ -22,3 +22,6 @@ __pycache__/
 *.log
 .DS_Store
 Thumbs.db
+/data-demo/
+/hakathon_new_data/
+/hakathon_new_data.rar

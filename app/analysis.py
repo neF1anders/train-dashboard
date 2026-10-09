@@ -1,6 +1,7 @@
 from .storage import PUBLIC_COLUMNS,public,raw_record,VERSION,meta
 from datetime import datetime,timezone
-import json,uuid
+import json,uuid,zlib
+from .episode import card
 
 LABELS={'act_danger':'Модуль препятствий','act_light':'Модуль светофоров','act_speed':'Модуль ограничения скорости'}
 HANDLES={'driver':'водитель','cpilot':'cpilot','undeterminable':'неопределённый источник'}
@@ -47,15 +48,34 @@ def analyze(con,vehicle,start,end,route):
     if gaps:limits.append(f'Есть {len(gaps)} разрывов более 30 секунд; движение внутри них не восстанавливается.')
     if all(r['family']=='csv' for r in rows):limits.append('Доступны только CSV: подробных событий JSON нет. Часовой пояс CSV принят как Москва; числовые коды модулей сохранены без догадок.')
     if any('position_disagreement' in r['flags'] for r in rows):limits.append('Есть расхождение расчётных и исходных GPS-координат. Карта показывает исходный GPS с отметкой качества.')
+    raws={}
+    if len(rows)<=20000:
+        for r in con.execute('SELECT id,payload FROM records WHERE '+where,args):raws[r[0]]=json.loads(zlib.decompress(r[1]))
+    else:limits.append('Интервал слишком длинный для разбора по всем полям: состояние компонентов и уровень предупреждения не проверены. Сузьте интервал.')
+    episode=card(rows,raws,limits)
     summary=' '.join(f['text'] for f in facts if f['kind'] in ('speed','intervention','brake'))
     if not summary:summary='Доступны наблюдения, но данных для подтверждённого вывода о вмешательстве недостаточно.'
     return {'id':uuid.uuid4().hex,'created':datetime.now(timezone.utc).isoformat(),'vehicle':vehicle,'start':start,'end':end,'route':route,
             'rules_version':VERSION,'data_version':meta(con,'data_version'),'engine':'rules','summary':summary,
             'facts':facts,'limitations':limits,'coverage_seconds':coverage,'records':len(rows),'gaps':gaps,'snapshot_ids':[r['id'] for r in rich],
-            'speed_max':max((r['speed'] for r in measured),default=None)}
+            'speed_max':max((r['speed'] for r in measured),default=None),
+            'narrative':episode['summary'],'card':episode['lines']}
+
+SECTION_QUESTIONS=[
+    (['чем заверш','итог','результат','остановил'],['result'],None),
+    (['как менял','до, во время','до и после','параметр'],['result'],('speed_before','speed_at','stop','min_speed','speed_after','decel')),
+    (['какие предупрежд','предупрежден'],['reaction'],('warning','warn_level','call')),
+    (['типы тормож','какие тормоз','тип тормож'],['reaction'],('brake_event','brake','skid')),
+    (['что зарегистр','в какой момент','что произошло','хронолог'],['circumstances','reaction'],None),
+]
 
 def answer(result,question):
     text=question.lower()
+    for keys,sections,kinds in SECTION_QUESTIONS:
+        if result.get('card') and any(k in text for k in keys):
+            lines=[l for l in result['card'] if l['section'] in sections and (kinds is None or l['kind'] in kinds)]
+            if not lines:return {'text':'В этом интервале нет подтверждающих записей для такого вывода.','evidence_ids':[],'engine':'rules'}
+            return {'text':' '.join(l['text'] for l in lines),'evidence_ids':list(dict.fromkeys(i for l in lines for i in l['evidence_ids'])),'engine':'rules'}
     kinds=[]
     if any(k in text for k in ['почему','причин','вмеш','сработ','опасн']):kinds=['intervention','warning','target']
     elif any(k in text for k in ['кто','управл','водител','пилот']):kinds=['control']

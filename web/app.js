@@ -2,6 +2,7 @@ import {CityMap,surface,color,lowerBound,positionAt} from './map.js';
 import {Scene} from './scene.js';
 import {Timeline} from './timeline.js';
 import {eventName} from './map.js';
+import {SignalChart,renderSystemState,renderEpisodeCard,episodeRow,targetName} from './dashboard.js';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const state={vehicle:'3139',day:'2026-09-14',route:'6',start:0,end:0,time:0,mode:'3d',map:false,analysisId:null};
 let catalog=[],trip=null,windowData=null,analysis=null,exact=null,playing=false,frameId=0,lastTick=0,loadVersion=0,frameVersion=0,saveTimer,rangeTimer,noticeTimer,placeTimer,placeToken=0,passes=[];
@@ -9,6 +10,7 @@ const rawCache=new Map();
 let timelineZoom=false,motion=null,previewTime=null,previewFrame=null,previewTimer,previewAbort,frameAbort;
 let playbackData=null,bufferPending=null,bufferAbort=null,windowAbort=null,windowVersion=0,bufferVersion=0,lastPlaceUpdate=0;
 let mapCluster=null,mapListLimit=30,timelineKey='',mapFocus=null,haltedGap=null;
+let episodeFilter='all',homeFilter='all',selectedEpisode=null,frameState=null,lastStateFetch=0,signalsAbort=null,signalsVersion=0,homeEpisodesVersion=0;
 const displayTime=()=>previewTime??state.time;
 const time=(t,ms=false)=>new Date(t+10800000).toISOString().slice(11,ms?23:19);
 const date=t=>new Date(t+10800000).toLocaleDateString('ru-RU',{timeZone:'UTC',day:'numeric',month:'long',year:'numeric'});
@@ -58,12 +60,20 @@ const map=new CityMap($('#city-map'),items=>{
   $('.map-incidents').scrollIntoView({block:'nearest',behavior:'smooth'});
 });
 const timeline=new Timeline($('#overview'),{preview:previewMoment,commit:safe(commitMoment),leave:clearPreview});
+const signals=new SignalChart($('#signals'),{commit:safe(t=>navigateMoment(t)),preview:null,leave:()=>{}});
 map.onObservations=items=>{renderMapObservations(items);$('#map-status').textContent='Точка наблюдения: выберите время снимка ниже. Это положение вагона, не светофора.';$('#map-observation-panel').scrollIntoView({block:'nearest',behavior:'smooth'});};
 
-async function boot(){const theme=localStorage.getItem('sirius-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme;$('#open-trip').disabled=true;const h=await api('health');$('#server-status').textContent='Сервер доступен';if(h.import.status!=='ready'){$('#import-state').hidden=false;$('#import-state').textContent=h.import.status==='error'?'Ошибка импорта: '+h.import.error:`Подготовка архива: ${h.import.current||0} из ${h.import.total||'…'} файлов. Каталог появится после индексации.`;setTimeout(()=>safe(boot)(),2500);return;}$('#import-state').hidden=true;const data=await api('catalog');catalog=data.entries;if(!catalog.length)throw Error('Каталог пока пуст');$('#archive-hours').textContent=n(data.coverage.total_hours??data.coverage.vehicles.reduce((s,r)=>s+r.combined_hours,0));const vehicles=[...new Set(catalog.map(r=>r.vehicle))];$('#catalog-summary').textContent=`${vehicles.length} вагонов · ${data.import.records.toLocaleString('ru-RU')} записей`;$('#archive-caption').textContent='14 сентября — 6 октября 2026 · с остановками';options($('#vehicle-select'),vehicles.map(v=>[v,'Вагон '+v]),state.vehicle);updateDates();$('#open-trip').disabled=false;await loadHistory();if(location.hash.startsWith('#work?')){const p=Object.fromEntries(new URLSearchParams(location.hash.slice(6)));await openTrip(p);} }
+async function boot(){const theme=localStorage.getItem('sirius-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme;$('#open-trip').disabled=true;const h=await api('health');$('#server-status').textContent='Сервер доступен';if(h.import.status!=='ready'){$('#import-state').hidden=false;$('#import-state').textContent=h.import.status==='error'?'Ошибка импорта: '+h.import.error:`Подготовка архива: ${h.import.current||0} из ${h.import.total||'…'} файлов. Каталог появится после индексации.`;setTimeout(()=>safe(boot)(),2500);return;}$('#import-state').hidden=true;const data=await api('catalog');catalog=data.entries;if(!catalog.length)throw Error('Каталог пока пуст');$('#archive-hours').textContent=n(data.coverage.total_hours??data.coverage.vehicles.reduce((s,r)=>s+r.combined_hours,0));const vehicles=[...new Set(catalog.map(r=>r.vehicle))];$('#catalog-summary').textContent=`${vehicles.length} вагонов · ${data.import.records.toLocaleString('ru-RU')} записей`;const days=catalog.map(r=>r.day).sort();$('#archive-caption').textContent=(days.length?`${date(Date.parse(days[0]+'T12:00:00+03:00'))} — ${date(Date.parse(days.at(-1)+'T12:00:00+03:00'))}`:'')+' · с остановками';if(data.demo){$('#archive-badge').textContent='Демо-данные';$('#archive-badge').classList.add('demo');$('#archive-caption').textContent+=' · синтетический архив для показа интерфейса';}options($('#vehicle-select'),vehicles.map(v=>[v,'Вагон '+v]),state.vehicle);updateDates();$('#open-trip').disabled=false;await loadHistory();if(location.hash.startsWith('#work?')){const p=Object.fromEntries(new URLSearchParams(location.hash.slice(6)));await openTrip(p);} }
 function updateDates(){const vehicle=$('#vehicle-select').value;const days=[...new Set(catalog.filter(r=>r.vehicle===vehicle).map(r=>r.day))];options($('#date-select'),days.map(d=>[d,date(Date.parse(d+'T12:00:00+03:00'))]),$('#date-select').value||state.day);updateRoutes();}
 function updateRoutes(){const entries=catalog.filter(r=>r.vehicle===$('#vehicle-select').value&&r.day===$('#date-select').value);options($('#route-select'),[['all','Все маршруты за день'],...entries.map(r=>[r.route,routeName(r.route)+(r.n<5?' · единичные записи':'')])],$('#route-select').value||state.route);selectionDescription();}
-function selectionDescription(){const entries=catalog.filter(r=>r.vehicle===$('#vehicle-select').value&&r.day===$('#date-select').value&&($('#route-select').value==='all'||r.route===$('#route-select').value));const hours=entries.reduce((s,r)=>s+r.hours,0),hasJson=entries.some(r=>r.json_n>0);$('#selection-description').textContent=`${n(hours)} ч наблюдений · ${hasJson?'подробные JSON + CSV':'только CSV'} · ${entries.length?time(Math.min(...entries.map(r=>r.start)))+'–'+time(Math.max(...entries.map(r=>r.end))):'нет данных'}`;}
+function selectionDescription(){const entries=catalog.filter(r=>r.vehicle===$('#vehicle-select').value&&r.day===$('#date-select').value&&($('#route-select').value==='all'||r.route===$('#route-select').value));const hours=entries.reduce((s,r)=>s+r.hours,0),hasJson=entries.some(r=>r.json_n>0);const counts={};for(const r of entries)for(const[k,v]of Object.entries(r.episode_counts||{}))counts[k]=(counts[k]||0)+v;const countText=[['Brake','торм.'],['Warn','предупр.'],['OverSpeed','скор.']].filter(([k])=>counts[k]).map(([k,l])=>counts[k]+' '+l).join(', ');$('#selection-description').textContent=`${n(hours)} ч наблюдений · ${hasJson?'подробные JSON + CSV':'только CSV'} · ${entries.length?time(Math.min(...entries.map(r=>r.start)))+'–'+time(Math.max(...entries.map(r=>r.end))):'нет данных'}${countText?' · срабатывания: '+countText:''}`;safe(loadHomeEpisodes)();}
+async function loadHomeEpisodes(){
+  const token=++homeEpisodesVersion,vehicle=$('#vehicle-select').value,day=$('#date-select').value,route=$('#route-select').value;if(!vehicle||!day)return;
+  const d=await api('episodes',{vehicle,day,route,type:homeFilter});if(token!==homeEpisodesVersion)return;const list=$('#home-episodes');list.replaceChildren();
+  if(!d.episodes.length){list.append(element('div','В выбранной записи нет срабатываний этого типа.','history-empty'));return;}
+  for(const e of d.episodes.slice(0,60)){const extra=element('span',`${n(e.speed)} км/ч`,'episode-speed');list.append(episodeRow(e,{onOpen:safe(()=>openTrip({vehicle,day,route:route==='all'?e.route:route,start:Math.max(0,e.start-15000),end:Math.max(e.end+15000,e.start+30000),time:e.start,episode:e.id,autoAnalyze:true})),extra}));}
+  if(d.episodes.length>60)list.append(element('p',`Показаны первые 60 из ${d.episodes.length}. Уточните маршрут или тип.`,'muted small'));
+}
 async function loadHistory(){const data=await api('history');const list=$('#history-list');list.replaceChildren();if(!data.items.length){list.append(element('div','Открытые поездки и сохранённые разборы появятся здесь.','history-empty'));return;}for(const r of data.items){const b=element('button',undefined,'history-item');const title=element('div');title.append(element('strong',r.title),element('small',`${time(r.state.start)}–${time(r.state.end)} · курсор ${time(r.state.time)}`));b.append(title,element('span',r.kind==='analysis'?'Анализ':'Просмотр','badge '+(r.kind==='analysis'?'saved':'')),element('small',new Date(r.updated).toLocaleString('ru-RU')));b.onclick=safe(()=>openTrip(r.state));list.append(b);}}
 function serialized(){return {...state,time:Math.round(state.time),start:Math.round(state.start),end:Math.round(state.end)};}
 function urlState(){if(!trip)return;const p=new URLSearchParams(Object.entries(serialized()).filter(([,v])=>v!==null));history.replaceState(null,'','#work?'+p);}
@@ -93,7 +103,8 @@ async function openTrip(input){
     $('#go-snapshot').disabled=!trip.snapshots.length;scene.snapshot=null;
     $('#snapshot-content').textContent=trip.snapshots.length?`Доступно ${trip.snapshots.length} уникальных снимков распознавания. Это данные об объектах, не фотографии. Выберите время для просмотра.`:'В этой записи нет расширенных снимков объектов. Геометрия препятствия неизвестна.';
     renderEventContext(trip.episodes.find(e=>e.start<=state.time&&e.end>=state.time));
-    scene.showSnapshot=false;$('#show-snapshot').checked=false;renderRange();renderMode();renderCurrent();await loadWindow();
+    scene.showSnapshot=false;$('#show-snapshot').checked=false;selectedEpisode=trip.episodes.find(e=>String(e.id)===String(input.episode))||null;frameState=null;renderEpisodes();renderRange();renderMode();renderCurrent();await loadWindow();
+    if(input.autoAnalyze&&!state.analysisId)await doAnalyze();
     if(state.analysisId){try{analysis=await api('analysis',{id:state.analysisId});renderAnalysis();}catch(e){state.analysisId=null;notice(e.message);}}
     saveView();window.scrollTo({top:0,behavior:'instant'});
   }finally{$('#open-trip').disabled=false;$('#server-status').textContent='Сервер доступен';}
@@ -104,6 +115,7 @@ function renderRange(){
   for(const key of ['start','end']){const el=$('#'+key+'-slider');el.min=trip.start;el.max=trip.end;el.value=state[key];}
   $('#cursor-slider').min=state.start;$('#cursor-slider').max=state.end;$('#cursor-slider').value=state.time;
   analysisStatus();timelineKey='';drawOverview();map.update(state.time,state.start,state.end);
+  $('#interval-label').textContent=`· интервал ${time(state.start)}–${time(state.end)} (${n((state.end-state.start)/1000,0)} с)`;
 }
 function analysisStatus(){if(!analysis){$('#analysis-state').textContent='Выберите интервал и запустите анализ.';$('#analysis-state').classList.remove('error');return;}const stale=analysis.start!==state.start||analysis.end!==state.end;$('#analysis-state').textContent=(stale?'Для предыдущего интервала. ':'Сохранено · ')+time(analysis.start)+'–'+time(analysis.end)+(stale?' Выполните новый анализ.':' · правила '+analysis.rules_version);$('#analysis-state').classList.toggle('error',stale);}
 async function loadWindow(){
@@ -113,7 +125,13 @@ async function loadWindow(){
   const d=await api('window',scope,undefined,windowAbort.signal);if(token!==windowVersion)return;
   windowData=d;exact=null;timelineKey='';
   if(!d.sampled){playbackData=d;bufferAbort?.abort();bufferPending=null;bufferVersion++;}
-  renderCurrent();await ensurePlaybackBuffer(state.time);if(token===windowVersion)$('#play').disabled=false;await fetchFrame();saveView();
+  renderCurrent();safe(loadSignals)();await ensurePlaybackBuffer(state.time);if(token===windowVersion)$('#play').disabled=false;await fetchFrame();saveView();
+}
+async function loadSignals(){
+  const token=++signalsVersion;signalsAbort?.abort();signalsAbort=new AbortController();$('#signals-status').textContent='Загрузка…';
+  const d=await api('signals',{vehicle:state.vehicle,route:state.route,start:state.start,end:state.end},undefined,signalsAbort.signal);if(token!==signalsVersion)return;
+  signals.setData(d.rows,{from:state.start,to:state.end},trip.episodes,trip.gaps);signals.update(displayTime());
+  $('#signals-status').textContent=d.count>d.rows.length?`${d.rows.length} из ${d.count} записей (прорежено с сохранением экстремумов)`:`${d.count} записей`;
 }
 async function ensurePlaybackBuffer(t){
   if(playbackData&&t>=playbackData.start&&t<=playbackData.end-8000)return;
@@ -140,7 +158,7 @@ async function fetchFrame(){
   frameAbort?.abort();frameAbort=new AbortController();const t=Math.round(state.time),vehicle=state.vehicle,route=state.route,token=loadVersion;
   const r=await api('frame',{vehicle,route,t},undefined,frameAbort.signal);
   if(t!==Math.round(state.time)||vehicle!==state.vehicle||route!==state.route||token!==loadVersion)return;
-  exact={time:t,record:r.record};renderCurrent();schedulePlace();
+  exact={time:t,record:r.record};frameState=r;renderCurrent();schedulePlace();
   if($('#raw-details').open&&r.record)await showRaw(r.record.id);
 }
 function schedulePlace(){
@@ -174,7 +192,25 @@ function renderCurrent(draw=true){
   $('#quality-note').textContent=notes.join(' ');$('#quality-note').classList.toggle('warning',gap||flags.includes('position_disagreement'));
   const p=motion.at(t);$('#scene-caption').textContent=p?'Типовая модель · сглаженный GPS · исходные координаты в записи':'Последняя позиция не означает движение в разрыве';
   $('#odometry-note').textContent=r?`Позиция на сегменте: ${r.pos??'нет данных'}; сегмент: ${r.segment??'не указан'}. Значения разных сегментов не суммируются.`:'';
-  $('#preview-badge').hidden=previewTime===null;drawOverview();
+  $('#preview-badge').hidden=previewTime===null;drawOverview();signals.update(t);
+  const frame=previewTime!==null?previewFrame&&{state:previewFrame.state,record:previewFrame.record}:frameState;
+  renderSystemState($('#system-state'),frame,{gap});$('#state-time').textContent=frame?.record?'запись '+time(frame.record.t,true):time(t,true);
+  renderHud(r,gap);
+  if(playing&&performance.now()-lastStateFetch>700){lastStateFetch=performance.now();api('frame',{vehicle:state.vehicle,route:state.route,t:Math.round(state.time)}).then(d=>{if(playing){frameState=d;}}).catch(()=>{});}
+}
+function renderHud(r,gap){
+  const hud=$('#scene-hud');hud.replaceChildren();if(!r||gap)return;
+  hud.append(element('strong',r.speed==null?'—':n(r.speed,0)+' км/ч','hud-speed'));
+  for(const[k,label]of[['act_danger','Препятствие'],['act_light','Светофор'],['act_speed','Скорость']]){if(r[k]==='ActuationAct')hud.append(element('span',label+' · вмешательство','hud-pill bad'));else if(r[k]==='WarningAct')hud.append(element('span',label+' · предупреждение','hud-pill warn'));}
+  if(r.brakes)hud.append(element('span','Тормоз: '+[[1,'мех.'],[2,'рельс.'],[4,'экстр.'],[8,'авар.']].filter(([b])=>r.brakes&b).map(([,l])=>l).join(', '),'hud-pill bad'));
+  if(r.handle==='cpilot')hud.append(element('span','Управляет система','hud-pill purple'));
+}
+function renderEpisodes(){
+  if(!trip)return;const list=$('#episode-list');list.replaceChildren();const items=trip.episodes.filter(e=>episodeFilter==='all'||e.type===episodeFilter);
+  $('#episode-count').textContent=`${items.length} из ${trip.episodes.length}`;
+  for(const e of items)list.append(episodeRow(e,{selected:selectedEpisode?.id===e.id,onOpen:safe(async()=>{await selectEvent(e);await doAnalyze();})}));
+  if(!items.length)list.append(element('p','Нет срабатываний этого типа в записи.','muted small'));
+  list.querySelector('[aria-pressed=true]')?.scrollIntoView({block:'nearest'});
 }
 async function seek(t,{pause=true,exactRecord=null}={}){
   if(pause)stop();clearPreview();haltedGap=null;state.time=Math.max(state.start,Math.min(state.end,Math.round(t)));exact=exactRecord?{time:state.time,record:exactRecord}:null;
@@ -197,7 +233,7 @@ function drawOverview(){
 function previewMoment(t,event){
   stop();previewTime=t;previewFrame=null;clearTimeout(previewTimer);previewAbort?.abort();renderCurrent();
   $('#preview-badge').textContent=(event?eventName(event):'Предпросмотр')+' · нажмите для перехода';
-  previewTimer=setTimeout(async()=>{previewAbort=new AbortController();try{const r=await api('frame',{vehicle:state.vehicle,route:state.route,t},undefined,previewAbort.signal);if(previewTime!==t)return;previewFrame={time:t,record:r.record};renderCurrent();}catch(e){if(e.name!=='AbortError')notice(e.message);}},90);
+  previewTimer=setTimeout(async()=>{previewAbort=new AbortController();try{const r=await api('frame',{vehicle:state.vehicle,route:state.route,t},undefined,previewAbort.signal);if(previewTime!==t)return;previewFrame={time:t,record:r.record,state:r.state};renderCurrent();}catch(e){if(e.name!=='AbortError')notice(e.message);}},90);
 }
 function clearPreview(){
   clearTimeout(previewTimer);previewAbort?.abort();if(previewTime===null)return;previewTime=null;previewFrame=null;$('#preview-badge').hidden=true;renderCurrent();
@@ -209,16 +245,16 @@ async function navigateMoment(t){
 }
 async function commitMoment(t,event){timeline.hover=null;if(event)return selectEvent(event);return navigateMoment(t);}
 async function selectEvent(event){
-  clearPreview();state.time=event.start;renderEventContext(event);
+  clearPreview();state.time=event.start;selectedEpisode=event;renderEpisodes();renderEventContext(event);
   await applyRange(Math.max(trip.start,event.start-15000),Math.min(trip.end,Math.max(event.end+15000,event.start+30000)));
   await seek(event.start);
 }
-function redraw(){drawOverview();scene.draw();map.invalidate();}
+function redraw(){drawOverview();scene.draw();map.invalidate();signals.dirty=true;signals.draw();}
 async function showRaw(id){let d=rawCache.get(id);if(!d){d=await api('record',{id});rawCache.set(id,d);}$('#raw-record').textContent=JSON.stringify(d.raw,null,2);$('#record-reference').textContent=`${d.source.path} · ${d.record.family==='json'?'блок':'строка'} ${d.sequence_index}${d.json_pointer?' · '+d.json_pointer:''} · SHA-256 записи ${d.record_hash}`;return d;}
 async function evidence(id){const d=await showRaw(id);if(d.record.t<state.start||d.record.t>state.end){await applyRange(Math.max(trip.start,d.record.t-15000),Math.min(trip.end,d.record.t+30000));}await seek(d.record.t,{exactRecord:d.record});exact={time:d.record.t,record:d.record};renderCurrent();$('#raw-details').open=true;saveView();}
 function evidenceButton(id,text){const b=element('button',text||'Запись #'+id,'evidence-link');b.type='button';b.dataset.evidenceId=id;b.onclick=safe(()=>evidence(id));return b;}
-function renderAnalysis(){if(!analysis)return;$('#analysis-result').hidden=false;$('#analysis-summary').textContent=analysis.summary;analysisStatus();const cards=$('#evidence-cards');cards.replaceChildren();const priority=['intervention','brake','control','warning','speed','target'];const chosen=[...analysis.facts].sort((a,b)=>priority.indexOf(a.kind)-priority.indexOf(b.kind)).slice(0,3).sort((a,b)=>a.t-b.t);for(const f of chosen){const b=element('button',undefined,'evidence-card');b.type='button';b.dataset.evidenceId=f.evidence_ids[0];b.append(element('span',time(f.t,true),'time'),element('strong',f.title),element('p',f.text));b.onclick=safe(()=>evidence(f.evidence_ids[0]));cards.append(b);}const all=$('#all-facts');all.replaceChildren();for(const f of [...analysis.facts].sort((a,b)=>a.t-b.t)){const row=element('div',undefined,'fact-row'),body=element('div');body.append(element('h3',f.title),element('p',f.text));for(const id of f.evidence_ids)body.append(evidenceButton(id));row.append(element('span',time(f.t,true),'small tabular'),body);all.append(row);}$('#analysis-limits').replaceChildren(...analysis.limitations.map(t=>element('li',t)));$('#answer').replaceChildren();}
-async function doAnalyze(){const button=$('#analyze-button');button.disabled=true;button.textContent='Анализируем…';const request={vehicle:state.vehicle,route:state.route,start:state.start,end:state.end};try{const result=await api('analyze',{},request);if(result.vehicle!==state.vehicle||result.route!==state.route)return;analysis=result;state.analysisId=result.id;renderAnalysis();urlState();await api('history',{}, {id:'analysis:'+result.id,kind:'analysis',state:{...serialized(),start:result.start,end:result.end,time:result.start,analysisId:result.id}});notice('Анализ сохранён. Каждое утверждение можно проверить по исходной записи.');}finally{button.disabled=false;button.textContent='Анализировать интервал';}}
+function renderAnalysis(){if(!analysis)return;$('#analysis-result').hidden=false;$('#analysis-narrative').textContent=analysis.narrative||analysis.summary;$('#analysis-summary').textContent=analysis.narrative?'Кратко по правилам: '+analysis.summary:'';renderEpisodeCard($('#episode-card'),analysis.card||[],id=>safe(()=>evidence(id))());analysisStatus();const cards=$('#evidence-cards');cards.replaceChildren();const priority=['intervention','brake','control','warning','speed','target'];const chosen=[...analysis.facts].sort((a,b)=>priority.indexOf(a.kind)-priority.indexOf(b.kind)).slice(0,3).sort((a,b)=>a.t-b.t);for(const f of chosen){const b=element('button',undefined,'evidence-card');b.type='button';b.dataset.evidenceId=f.evidence_ids[0];b.append(element('span',time(f.t,true),'time'),element('strong',f.title),element('p',f.text));b.onclick=safe(()=>evidence(f.evidence_ids[0]));cards.append(b);}const all=$('#all-facts');all.replaceChildren();for(const f of [...analysis.facts].sort((a,b)=>a.t-b.t)){const row=element('div',undefined,'fact-row'),body=element('div');body.append(element('h3',f.title),element('p',f.text));for(const id of f.evidence_ids)body.append(evidenceButton(id));row.append(element('span',time(f.t,true),'small tabular'),body);all.append(row);}$('#analysis-limits').replaceChildren(...analysis.limitations.map(t=>element('li',t)));$('#answer').replaceChildren();}
+async function doAnalyze(){const button=$('#analyze-button');button.disabled=true;$('#analyze-top').disabled=true;button.textContent='Анализируем…';const request={vehicle:state.vehicle,route:state.route,start:state.start,end:state.end};try{const result=await api('analyze',{},request);if(result.vehicle!==state.vehicle||result.route!==state.route)return;analysis=result;state.analysisId=result.id;renderAnalysis();urlState();await api('history',{}, {id:'analysis:'+result.id,kind:'analysis',state:{...serialized(),start:result.start,end:result.end,time:result.start,analysisId:result.id}});notice('Разбор готов. Нажмите на время у утверждения, чтобы проверить его по исходной записи.');}finally{button.disabled=false;$('#analyze-top').disabled=false;button.textContent='Анализировать интервал';}}
 async function ask(question){if(!analysis)throw Error('Сначала выполните анализ выбранного интервала');if(analysis.start!==state.start||analysis.end!==state.end)throw Error('Интервал изменился. Выполните новый анализ перед вопросом.');$('#answer').textContent='Проверяем записи…';const a=await api('question',{}, {analysis_id:analysis.id,question});$('#answer').replaceChildren(element('p',a.text));for(const id of a.evidence_ids)$('#answer').append(evidenceButton(id));}
 const objectName=type=>({CAR:'Автомобиль',HUMAN:'Человек',TRAFFIC_LIGHT:'Светофор'})[type]||type||'Объект';
 const signalName=signal=>({CAR_STOP:'красный для автомобилей',CAR_YELLOW:'жёлтый для автомобилей',CAR_FORWARD:'разрешающий для автомобилей',RU_TRAM_STOP:'запрещающий для трамвая',RU_TRAM_FORWARD:'разрешающий для трамвая',PEDESTRIAN_STOP:'запрещающий для пешеходов',PEDESTRIAN_FORWARD:'разрешающий для пешеходов'})[signal]||signal;
@@ -346,7 +382,9 @@ $('#map-seek').onclick=safe(async()=>{const p=passes[+$('#map-pass').value];if(p
 $('#next-observation').onclick=safe(async()=>{const next=motion.next(state.time);if(next!==null)await navigateMoment(next);});
 $('#map-panel').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();toggleMap(false);}if(e.key==='Tab'){const items=[...$('#map-panel').querySelectorAll('button,select,a')].filter(x=>!x.disabled&&!x.hidden&&x.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing){stop();saveView();}});
-$('#analyze-button').onclick=safe(doAnalyze);$$('[data-question]').forEach(b=>b.onclick=safe(()=>ask(b.dataset.question)));$('#question-form').onsubmit=e=>{e.preventDefault();safe(()=>ask($('#question-input').value))();};
+$('#analyze-button').onclick=safe(doAnalyze);$('#analyze-top').onclick=safe(async()=>{await doAnalyze();$('.analysis-panel').scrollIntoView({block:'start',behavior:'smooth'});});
+$$('[data-episode-filter]').forEach(b=>b.onclick=()=>{episodeFilter=b.dataset.episodeFilter;$$('[data-episode-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderEpisodes();});
+$$('[data-home-filter]').forEach(b=>b.onclick=()=>{homeFilter=b.dataset.homeFilter;$$('[data-home-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));safe(loadHomeEpisodes)();});$$('[data-question]').forEach(b=>b.onclick=safe(()=>ask(b.dataset.question)));$('#question-form').onsubmit=e=>{e.preventDefault();safe(()=>ask($('#question-input').value))();};
 $('#raw-details').ontoggle=()=>{if($('#raw-details').open&&currentRow())safe(()=>showRaw(currentRow().id))();};$('#snapshot-select').onchange=safe(selectSnapshot);$('#go-snapshot').onclick=safe(async()=>{const id=+$('#snapshot-select').value;if(!id){notice('Сначала выберите снимок.');return;}await openSnapshot(id);});$('#show-snapshot').onchange=e=>{scene.showSnapshot=e.target.checked;scene.draw();};
 $('#export-analysis').onclick=()=>{if(!analysis)return;const file=new Blob([JSON.stringify(analysis,null,2)],{type:'application/json'}),a=element('a');a.href=URL.createObjectURL(file);a.download=`sirius-${analysis.vehicle}-${analysis.id.slice(0,8)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
 $('#theme-button').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');new ResizeObserver(redraw).observe(document.querySelector('main'));
